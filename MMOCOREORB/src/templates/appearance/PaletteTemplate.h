@@ -8,6 +8,8 @@
 #ifndef PALETTETEMPLATE_H_
 #define PALETTETEMPLATE_H_
 
+#include "engine/engine.h"
+
 #include "templates/appearance/PaletteColor.h"
 
 class PaletteTemplate : public Object {
@@ -53,13 +55,14 @@ public:
 		}
 	}
 
-	const Vector<PaletteColor>& getColors() const {
-		return colors;
+	Vector<PaletteColor>* getColors() {
+		return &colors;
 	}
 
-	int getColorCount() const {
+	int getColorCount() {
 		return colors.size();
 	}
 };
+
 
 #endif /* PALLETEFILE_H_ */

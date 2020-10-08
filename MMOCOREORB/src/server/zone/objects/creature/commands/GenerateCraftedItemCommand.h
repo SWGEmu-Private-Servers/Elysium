@@ -10,6 +10,7 @@
 #include "server/zone/objects/draftschematic/DraftSchematic.h"
 #include "server/zone/objects/factorycrate/FactoryCrate.h"
 #include "server/zone/managers/crafting/CraftingManager.h"
+#include "server/zone/managers/stringid/StringIdManager.h"
 
 class GenerateCraftedItemCommand : public QueueCommand {
 public:
@@ -32,13 +33,13 @@ public:
 		ManagedReference<CreatureObject*> player = cast<CreatureObject*>(creature);
 
 		ManagedReference<CraftingManager*> craftingManager = player->getZoneServer()->getCraftingManager();
-		if (craftingManager == nullptr) {
+		if (craftingManager == NULL) {
 			return GENERALERROR;
 		}
 
 		ManagedReference<SceneObject*> inventory = creature->getSlottedObject("inventory");
 
-		if (inventory == nullptr) {
+		if (inventory == NULL) {
 			creature->sendSystemMessage("Error locating target inventory");
 			return GENERALERROR;
 		}
@@ -63,14 +64,14 @@ public:
 			ManagedReference<DraftSchematic* > draftSchematic =
 					creature->getZoneServer()->createObject(file.hashCode(), 0).castTo<DraftSchematic*>();
 
-			if (draftSchematic == nullptr || !draftSchematic->isValidDraftSchematic()) {
+			if (draftSchematic == NULL || !draftSchematic->isValidDraftSchematic()) {
 				creature->sendSystemMessage("File entered not valid, please be sure to use the draft schematics server script path not client path");
 				return GENERALERROR;
 			}
 
 			ManagedReference<ManufactureSchematic* > manuSchematic = ( draftSchematic->createManufactureSchematic()).castTo<ManufactureSchematic*>();
 
-			if (manuSchematic == nullptr) {
+			if (manuSchematic == NULL) {
 				creature->sendSystemMessage("Error creating ManufactureSchematic from DraftSchematic");
 				return GENERALERROR;
 			}
@@ -87,7 +88,7 @@ public:
 			if (tokenizer.hasMoreTokens())
 				quality = tokenizer.getIntToken();
 
-			quality = Math::max(0, quality);
+			quality = MAX(0, quality);
 
 			unsigned int targetTemplate = draftSchematic->getTanoCRC();
 
@@ -111,7 +112,7 @@ public:
 			ManagedReference<TangibleObject *> prototype =  (
 					creature->getZoneServer()->createObject(targetTemplate, 2)).castTo<TangibleObject*>();
 
-			if (prototype == nullptr) {
+			if (prototype == NULL) {
 				creature->sendSystemMessage("Unable to create target item, is it implemented yet?");
 				return GENERALERROR;
 			}
@@ -140,7 +141,7 @@ public:
 							float maxValue = craftingValues->getMaxValue(subtitle);
 							float minValue = craftingValues->getMinValue(subtitle);
 
-							//float newValue = fabs(maxValue-minValue)*((float)quality/100.f) + Math::max(minValue, maxValue);
+							//float newValue = fabs(maxValue-minValue)*((float)quality/100.f) + MAX(minValue, maxValue);
 							//craftingValues->setCurrentValue(subtitle, newValue);
 
 							craftingValues->setCurrentPercentage(subtitle, (float)quality/100.f, 5.f);
@@ -170,9 +171,9 @@ public:
 			prototype->updateToDatabase();
 
 			if (quantity > 1) {
-				ManagedReference<FactoryCrate* > crate = prototype->createFactoryCrate(quantity, true);
+				ManagedReference<FactoryCrate* > crate = prototype->createFactoryCrate(true);
 
-				if (crate == nullptr) {
+				if (crate == NULL) {
 					prototype->destroyObjectFromDatabase(true);
 					return GENERALERROR;
 				}

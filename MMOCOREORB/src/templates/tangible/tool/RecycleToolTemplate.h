@@ -1,6 +1,7 @@
 #ifndef RECYCLETOOLTEMPLATE_H_
 #define RECYCLETOOLTEMPLATE_H_
 
+#include "templates/SharedTangibleObjectTemplate.h"
 #include "templates/tangible/ContainerTemplate.h"
 
 class RecycleToolTemplate : public ContainerTemplate {
@@ -18,7 +19,7 @@ public:
 
 	}
 
-	void readObject(LuaObject* templateData) override {
+	void readObject(LuaObject* templateData) {
 		ContainerTemplate::readObject(templateData);
 
 		toolType = templateData->getByteField("toolType");
@@ -30,15 +31,15 @@ public:
 		resources.pop();
 	}
 
-	short getToolType() const {
+	short getToolType() {
 		return toolType;
 	}
 
-	const Vector<String>& getResourceTypes() const {
+	Vector<String> getResourceTypes() {
 		return resourceTypes;
 	}
 
-	bool isRecycleToolTemplate() const override {
+	bool isRecycleToolTemplate() {
 		return true;
 	}
 };

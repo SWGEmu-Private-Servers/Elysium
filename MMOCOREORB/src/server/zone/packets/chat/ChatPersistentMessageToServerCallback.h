@@ -8,14 +8,19 @@
 #ifndef CHATPERSISTENTMESSAGETOSERVERCALLBACK_H_
 #define CHATPERSISTENTMESSAGETOSERVERCALLBACK_H_
 
+
 #include "server/zone/packets/MessageCallback.h"
 #include "server/chat/ChatManager.h"
+#include "server/zone/managers/city/CityManager.h"
 #include "server/zone/objects/building/BuildingObject.h"
 #include "server/zone/objects/guild/GuildObject.h"
+
 #include "server/chat/StringIdChatParameterVector.h"
 #include "server/chat/WaypointChatParameterVector.h"
+
 #include "server/zone/objects/region/CityRegion.h"
 #include "server/zone/objects/region/CitizenList.h"
+
 #include "server/zone/packets/chat/ChatOnSendPersistentMessage.h"
 
 class ChatPersistentMessageToServerCallback : public MessageCallback {
@@ -32,8 +37,6 @@ public:
 		MessageCallback(client, server) {
 
 		sequence = 0;
-
-		setCustomTaskQueue("slowQueue");
 	}
 
 	void parse(Message* message) {
@@ -79,12 +82,11 @@ public:
 	}
 
 	int sendMail(CreatureObject* player, const String& recipient) {
-		auto playerManager = server->getZoneServer()->getPlayerManager();
 
 		if (recipient == "guild") {
 			ManagedReference<GuildObject*> guild = player->getGuildObject().get();
 
-			if (guild == nullptr)
+			if (guild == NULL)
 				return 0;
 
 			if (!guild->hasMailPermission(player->getObjectID())) {
@@ -107,34 +109,39 @@ public:
 			locker.release();
 
 			for (int i = 0; i < guildMembers.size(); ++i) {
-				auto playerName = playerManager->getPlayerName(guildMembers.get(i));
+				ManagedReference<SceneObject*> receiver = server->getZoneServer()->getObject(guildMembers.get(i));
 
-				sendMailToPlayer(player, playerName);
+				if (receiver == NULL || !receiver->isPlayerCreature())
+					continue;
+
+				CreatureObject* receiverPlayer = cast<CreatureObject*>(receiver.get());
+
+				sendMailToPlayer(player, receiverPlayer->getFirstName());
 			}
 
 			return 0;
 		}
 		else if (recipient == "citizens") {
 			PlayerObject* ghost = player->getPlayerObject();
-			if (ghost == nullptr)
+			if (ghost == NULL)
 				return 0;
 
 			// Pull the player's residence
 			uint64 declaredOidResidence = ghost->getDeclaredResidence();
 			ManagedReference<BuildingObject*> declaredResidence = player->getZoneServer()->getObject(declaredOidResidence).castTo<BuildingObject*>();
-			if (declaredResidence == nullptr){
+			if (declaredResidence == NULL){
 				player->sendSystemMessage("@error_message:insufficient_permissions");
 				return 0;
 			}
 
 			// Player must be the mayor of the city where he resides
-			ManagedReference<CityRegion*> declaredCity = declaredResidence->getCityRegion().get();
-			if (declaredCity != nullptr && declaredCity->isMayor(player->getObjectID())) {
+			ManagedReference<CityRegion*> declaredCity = declaredResidence->getCityRegion();
+			if (declaredCity != NULL && declaredCity->isMayor(player->getObjectID())) {
 
 				Locker cityLocker(declaredCity);
 
 				CitizenList* citizenList = declaredCity->getCitizenList();
-				if (citizenList == nullptr)
+				if (citizenList == NULL)
 					return 0;
 
 				Vector<String> players;
@@ -142,9 +149,14 @@ public:
 				for (int i = 0; i < citizenList->size(); ++i) {
 					uint64 citizenID = citizenList->get(i);
 
-					auto playerName = playerManager->getPlayerName(citizenID);
+					ManagedReference<SceneObject*> receiver = player->getZoneServer()->getObject(citizenID);
 
-					players.add(playerName);
+					if (receiver == NULL || !receiver->isPlayerCreature())
+						continue;
+
+					CreatureObject* receiverPlayer = cast<CreatureObject*>(receiver.get());
+
+					players.add(receiverPlayer->getFirstName());
 				}
 
 				cityLocker.release();
@@ -159,99 +171,26 @@ public:
 				return 0;
 			}
 		}
-		else if (recipient == "@online") {
-			auto ghost = player->getPlayerObject();
-
-			if (ghost == nullptr)
-				return 0;
-
-			if (!ghost->hasGodMode()) {
-				player->sendSystemMessage("@error_message:insufficient_permissions");
-				return 0;
-			}
-
-			String newBody = body.toString();
-
-			// Allow for special first line of: From: {sender}
-			String tmpBody = body.toString();
-			StringTokenizer bodyParts(tmpBody);
-			bodyParts.setDelimiter(":");
-
-			String from = player->getFirstName();
-
-			if (bodyParts.hasMoreTokens()) {
-				String part;
-				bodyParts.getStringToken(part);
-
-				if (part.toLowerCase() == "from") {
-					bodyParts.setDelimiter("\n");
-					if (bodyParts.hasMoreTokens()) {
-						bodyParts.getStringToken(from);
-						bodyParts.finalToken(newBody);
-
-						from = from.trim();
-
-						// Make sure they're not spoofing an existing player's name to avoid confusion and griefing
-						if (playerManager->containsPlayer(from)) {
-							StringBuffer msg;
-							msg << "Can't spoof email from an existing player name: \"" << from << "\"";
-							player->sendSystemMessage(msg.toString());
-							return 0;
-						}
-					}
-				}
-			}
-
-			body = UnicodeString(newBody.trim());
-
-			Vector<uint64> playerList = playerManager->getOnlinePlayerList();
-			int countSent = 0;
-			auto chatManager = server->getChatManager();
-
-			for (int i = 0; i < playerList.size(); i++) {
-				uint64 playerID = playerList.get(i);
-
-				auto playerName = playerManager->getPlayerName(playerID);
-
-				if (playerName.isEmpty())
-					continue;
-
-				if (chatManager->sendMail(from, header, body, playerName, &stringIdParameters, &waypointParameters) == ChatManager::IM_SUCCESS)
-					countSent++;
-			}
-
-			StringBuffer msg;
-
-			msg << "Sent email to " << countSent << " player(s) from " << from;
-
-			player->info(msg.toString(), true);
-			player->sendSystemMessage(msg.toString());
-
-			return 0;
-		}
 
 		return sendMailToPlayer(player, recipient);
 	}
 
 	int sendMailToPlayer(CreatureObject* player, const String& recipientName) {
-		auto chatManager = server->getChatManager();
-		auto playerManager = server->getZoneServer()->getPlayerManager();
+		ChatManager* chatManager = server->getChatManager();
 
-		if (chatManager == nullptr || playerManager == nullptr)
+		if (chatManager == NULL)
 			return 0;
 
-		if (!playerManager->containsPlayer(recipientName)) {
-			StringIdChatParameter noname;
-			noname.setStringId("@ui_pm:recipient_invalid_prose"); // "Are you sure you have the correct name? There is no player named '%TT'."
-			noname.setTT(recipientName);
-			player->sendSystemMessage(noname);
-			return ChatManager::NOAVATAR;
+		uint64 receiverObjectID = server->getPlayerManager()->getObjectID(recipientName);
+
+		if (receiverObjectID == 0) {
+			return 0;
 		}
 
-		/*ManagedReference<SceneObject*> receiver = server->getZoneServer()->getObject(receiverObjectID);
+		ManagedReference<SceneObject*> receiver = server->getZoneServer()->getObject(receiverObjectID);
 		ManagedReference<PlayerObject*> sender = player->getPlayerObject();
 
-		if (receiver == nullptr || !receiver->isPlayerCreature() || sender == nullptr)
+		if (receiver == NULL || !receiver->isPlayerCreature() || sender == NULL)
 			return 0;
 
 		bool godMode = false;
@@ -264,13 +203,13 @@ public:
 		CreatureObject* receiverPlayer = cast<CreatureObject*>(receiver.get());
 		ManagedReference<PlayerObject*> ghost = receiverPlayer->getPlayerObject();
 
-		if (ghost == nullptr || (ghost->isIgnoring(player->getFirstName().toLowerCase()) && !godMode)) {
-			StringIdChatParameter err("ui_pm", "recipient_ignored_prose"); // "Your Mail Message has not been delivered to '%TT' because the recipient has chosen not to receive mail from you at this time."
+		if (ghost == NULL || (ghost->isIgnoring(player->getFirstName().toLowerCase()) && !godMode)) {
+			StringIdChatParameter err("ui_pm", "recipient_ignored_prose");
 			err.setTT(recipientName);
 			player->sendSystemMessage(err);
 
 			return ChatManager::IM_IGNORED;
-		}*/
+		}
 
 		return chatManager->sendMail(player->getFirstName(), header, body, recipientName, &stringIdParameters, &waypointParameters);
 	}
@@ -278,7 +217,7 @@ public:
 	void run() {
 		ManagedReference<CreatureObject*> player = client->getPlayer();
 
-		if (player == nullptr)
+		if (player == NULL)
 			return;
 
 		int result = 0;
@@ -310,5 +249,6 @@ public:
 	}
 
 };
+
 
 #endif /* CHATPERSISTENTMESSAGETOSERVERCALLBACK_H_ */

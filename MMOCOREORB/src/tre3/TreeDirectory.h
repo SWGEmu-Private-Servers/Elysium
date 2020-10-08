@@ -8,6 +8,7 @@
 #ifndef TREEDIRECTORY_H_
 #define TREEDIRECTORY_H_
 
+#include "engine/engine.h"
 #include "TreeFileRecord.h"
 
 class TreeDirectory : public SortedVector<Reference<TreeFileRecord*> > {
@@ -55,8 +56,9 @@ public:
 	            r = m - 1;
 	    }
 
-	    return -1;
+    	return -1;
 	}
 };
+
 
 #endif /* TREEDIRECTORY_H_ */

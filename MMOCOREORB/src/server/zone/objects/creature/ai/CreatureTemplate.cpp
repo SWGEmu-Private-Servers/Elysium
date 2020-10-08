@@ -6,7 +6,6 @@
  */
 
 #include "CreatureTemplate.h"
-#include "server/zone/managers/creature/CreatureTemplateManager.h"
 
 CreatureTemplate::CreatureTemplate() {
 	conversationTemplate = 0;
@@ -26,7 +25,6 @@ CreatureTemplate::CreatureTemplate() {
 	randomNameType = 0;
 	randomNameTag = false;
 	customName = "";
-	planetMapCategory = 0;
 	socialGroup = "";
 	faction = "";
 	level = 0;
@@ -76,7 +74,7 @@ CreatureTemplate::~CreatureTemplate() {
 	weapons.removeAll();
 
 	delete attacks;
-	attacks = nullptr;
+	attacks = NULL;
 }
 
 void CreatureTemplate::readObject(LuaObject* templateData) {
@@ -84,7 +82,6 @@ void CreatureTemplate::readObject(LuaObject* templateData) {
 	objectName = templateData->getStringField("objectName").trim();
 	randomNameType = templateData->getIntField("randomNameType");
 	randomNameTag = templateData->getBooleanField("randomNameTag");
-	planetMapCategory = String(templateData->getStringField("planetMapCategory").trim()).hashCode();
 
 	customName = templateData->getStringField("customName").trim();
 	socialGroup = templateData->getStringField("socialGroup").trim();
@@ -143,15 +140,7 @@ void CreatureTemplate::readObject(LuaObject* templateData) {
 	LuaObject temps = templateData->getObjectField("templates");
 	if (temps.isValidTable()) {
 		for (int i = 1; i <= temps.getTableSize(); ++i) {
-			String tempName = temps.getStringAt(i).trim();
-
-			if (tempName.endsWith(".iff")) {
-				templates.add(tempName);
-				continue;
-			}
-
-			const Vector<String>& dressGroup = CreatureTemplateManager::instance()->getDressGroup(tempName);
-			templates.addAll(dressGroup);
+			templates.add(temps.getStringAt(i).trim());
 		}
 	}
 
@@ -194,15 +183,6 @@ void CreatureTemplate::readObject(LuaObject* templateData) {
 	}
 
 	attackList.pop();
-
-	LuaObject hueTable = templateData->getObjectField("hues");
-	if (hueTable.isValidTable()) {
-		for (int i = 1; i <= hueTable.getTableSize(); ++i) {
-			hues.add(hueTable.getIntAt(i));
-		}
-	}
-
-	hueTable.pop();
 
 	outfit = templateData->getStringField("outfit");
 

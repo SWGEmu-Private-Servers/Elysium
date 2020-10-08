@@ -1,11 +1,14 @@
 #ifndef SAMPLEDNATASK_H_
 #define SAMPLEDNATASK_H_
 
+#include "server/zone/managers/resource/ResourceManager.h"
 #include "server/zone/managers/combat/CombatManager.h"
 #include "server/zone/managers/creature/CreatureManager.h"
 #include "server/zone/managers/creature/DnaManager.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "templates/params/creature/CreatureAttribute.h"
+#include "server/zone/objects/creature/ai/CreatureTemplate.h"
+#include "server/zone/objects/tangible/component/genetic/GeneticComponent.h"
 #include "engine/engine.h"
 
 class SampleDnaTask : public Task {
@@ -65,11 +68,11 @@ public:
 		switch(currentPhase) {
 		case BEGIN:
 			// We should be good to go now and try the sample
-			if (player->getHAM(CreatureAttribute::MIND) < mindCost) {
+			if (player->getHAM(CreatureAttribute::ACTION) < mindCost) {
 				player->sendSystemMessage("@bio_engineer:harvest_dna_attrib_too_low");
 			} else {
 				prepareCreatureForSampling();
-				player->inflictDamage(player, CreatureAttribute::MIND, mindCost, false, true);
+				player->inflictDamage(player, CreatureAttribute::ACTION, mindCost, false, true);
 				player->sendSystemMessage("@bio_engineer:harvest_dna_begin_harvest");
 				currentPhase = SAMPLING;
 				// We grab the original mask and faction in ctor
@@ -215,8 +218,8 @@ public:
 	void award(int cl, float rollMod, int skillMod) {
 		int xp = DnaManager::instance()->generateXp(cl);
 		ManagedReference<PlayerManager*> playerManager = player->getZoneServer()->getPlayerManager();
-		if(playerManager != nullptr)
-			playerManager->awardExperience(player, "bio_engineer_dna_harvesting", xp, true);
+		if(playerManager != NULL)
+			playerManager->awardExperience(player, "creaturehandler", xp, true);
 		int quality = 0;
 		// generate quality based on skill
 		int luckRoll = System::random(100);

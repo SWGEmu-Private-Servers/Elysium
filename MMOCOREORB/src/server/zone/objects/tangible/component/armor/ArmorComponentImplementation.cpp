@@ -3,7 +3,8 @@
 		See file COPYING for copying conditions.*/
 
 #include "server/zone/objects/tangible/component/armor/ArmorComponent.h"
-#include "templates/tangible/SharedWeaponObjectTemplate.h"
+#include "server/zone/objects/manufactureschematic/ManufactureSchematic.h"
+#include "server/zone/objects/tangible/weapon/WeaponObject.h"
 
 void ArmorComponentImplementation::initializeTransientMembers() {
 	ComponentImplementation::initializeTransientMembers();

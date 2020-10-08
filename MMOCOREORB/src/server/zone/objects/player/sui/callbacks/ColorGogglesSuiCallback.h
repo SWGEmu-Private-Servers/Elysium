@@ -33,14 +33,14 @@ public:
 
 		String palette = cBox->getColorPalette();
 
-		ManagedReference<SceneObject*> goggles = cBox->getUsingObject().get();
+		ManagedReference<SceneObject*> goggles = cBox->getUsingObject();
 
-		if (goggles == nullptr)
+		if (goggles == NULL)
 			return;
 
 		ManagedReference<TangibleObject*> gogglesTano = goggles->asTangibleObject();
 
-		if (gogglesTano != nullptr) {
+		if (gogglesTano != NULL) {
 			Locker locker(gogglesTano, creature);
 
 			gogglesTano->setCustomizationVariable(palette, index, true);

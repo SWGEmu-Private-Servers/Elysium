@@ -8,16 +8,23 @@
 #ifndef TENDCOMMAND_H_
 #define TENDCOMMAND_H_
 
-#include "server/zone/objects/building/BuildingObject.h"
+
 #include "server/zone/objects/scene/SceneObject.h"
+#include "server/zone/objects/tangible/pharmaceutical/CurePack.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/player/PlayerManager.h"
+#include "server/zone/objects/creature/events/InjuryTreatmentTask.h"
+#include "server/zone/objects/creature/buffs/Buff.h"
+#include "server/zone/objects/creature/BuffAttribute.h"
+#include "server/zone/objects/creature/buffs/DelayedBuff.h"
+#include "server/zone/packets/object/CombatAction.h"
 #include "QueueCommand.h"
 
 class TendCommand : public QueueCommand {
 protected:
 	int mindCost;
 	int mindWoundCost;
+	int actionCost;
 
 	int healthHealed;
 	int actionHealed;
@@ -28,6 +35,7 @@ protected:
 
 	bool tendDamage;
 	bool tendWound;
+	bool healDamage;
 
 	float speed;
 	float range;
@@ -38,6 +46,7 @@ public:
 		: QueueCommand(name, server) {
 
 		mindCost = 0;
+		actionCost = 0;
 		mindWoundCost = 0;
 
 		range = 0;
@@ -51,6 +60,7 @@ public:
 
 		tendDamage = false;
 		tendWound = false;
+		healDamage = false;
 
 		speed = 0.0f;
 	}
@@ -73,12 +83,10 @@ public:
 
 		StringBuffer msgPlayer, msgTarget, msgBody, msgTail;
 
-		if (healthDamage > 0 && actionDamage > 0) {
-			msgBody << healthDamage << " health and " << actionDamage << " action";
+		if (healthDamage > 0) {
+			msgBody << healthDamage << " health ";
 		} else if (healthDamage > 0) {
 			msgBody << healthDamage << " health";
-		} else if (actionDamage > 0) {
-			msgBody << actionDamage << " action";
 		} else {
 			return; //No damage to heal.
 		}
@@ -160,11 +168,11 @@ public:
 
 		ManagedReference<SceneObject*> object = server->getZoneServer()->getObject(target);
 
-		if (object != nullptr) {
+		if (object != NULL) {
 			if (!object->isCreatureObject()) {
 				TangibleObject* tangibleObject = dynamic_cast<TangibleObject*>(object.get());
 
-				if (tangibleObject != nullptr && tangibleObject->isAttackableBy(creature)) {
+				if (tangibleObject != NULL && tangibleObject->isAttackableBy(creature)) {
 					object = creature;
 				} else {
 					creature->sendSystemMessage("@healing_response:healing_response_a1"); //Target must be a player or a creature pet in order to tend damage
@@ -182,60 +190,24 @@ public:
 		if ((creatureTarget->isAiAgent() && !creatureTarget->isPet()) || creatureTarget->isDroidObject() || creatureTarget->isVehicleObject() || creatureTarget->isDead() || creatureTarget->isRidingMount() || creatureTarget->isAttackableBy(creature))
 			creatureTarget = creature;
 
-		if(!checkDistance(creature, creatureTarget, range))
-			return TOOFAR;
+		if (!creatureTarget->isInRange(creature, range + creatureTarget->getTemplateRadius() + creature->getTemplateRadius()))
+			return INVALIDTARGET;
 
-		if (creature != creatureTarget && checkForArenaDuel(creatureTarget)) {
-			creature->sendSystemMessage("@jedi_spam:no_help_target"); // You are not permitted to help that target.
-			return GENERALERROR;
-		}
+		uint8 attribute = findAttribute(creatureTarget);
 
 		if (!creatureTarget->isHealableBy(creature)) {
 			creature->sendSystemMessage("@healing:pvp_no_help");  //It would be unwise to help such a patient.
 			return GENERALERROR;
 		}
 
-		if (creature != creatureTarget && !CollisionManager::checkLineOfSight(creature, creatureTarget)) {
-			creature->sendSystemMessage("@healing:no_line_of_sight"); // You cannot see your target.
-			return GENERALERROR;
-		}
+		int mindCostNew = creature->calculateCostAdjustment(CreatureAttribute::ACTION, actionCost);
 
-		if (creature->isPlayerCreature() && creatureTarget->getParentID() != 0 && creature->getParentID() != creatureTarget->getParentID()) {
-			Reference<CellObject*> targetCell = creatureTarget->getParent().get().castTo<CellObject*>();
-
-			if (targetCell != nullptr) {
-				if (!creatureTarget->isPlayerCreature()) {
-					auto perms = targetCell->getContainerPermissions();
-
-					if (!perms->hasInheritPermissionsFromParent()) {
-						if (!targetCell->checkContainerPermission(creature, ContainerPermissions::WALKIN)) {
-							creature->sendSystemMessage("@combat_effects:cansee_fail"); // You cannot see your target.
-							return GENERALERROR;
-						}
-					}
-				}
-
-				ManagedReference<SceneObject*> parentSceneObject = targetCell->getParent().get();
-
-				if (parentSceneObject != nullptr) {
-					BuildingObject* buildingObject = parentSceneObject->asBuildingObject();
-
-					if (buildingObject != nullptr && !buildingObject->isAllowedEntry(creature)) {
-						creature->sendSystemMessage("@combat_effects:cansee_fail"); // You cannot see your target.
-						return GENERALERROR;
-					}
-				}
-			}
-		}
-
-		int mindCostNew = creature->calculateCostAdjustment(CreatureAttribute::FOCUS, mindCost);
-
-		if (creature->getHAM(CreatureAttribute::MIND) < mindCostNew) {
+		if (creature->getHAM(CreatureAttribute::ACTION) < mindCostNew) {
 			creature->sendSystemMessage("@healing_response:not_enough_mind"); //You do not have enough mind to do that.
 			return GENERALERROR;
 		}
 
-		float bfScale = creatureTarget->calculateBFRatio();
+		float bfScale = 1 - creatureTarget->calculateBFRatio();
 
 		if (tendDamage) {
 			if (!creatureTarget->hasDamage(CreatureAttribute::HEALTH) && !creatureTarget->hasDamage(CreatureAttribute::ACTION)) {
@@ -253,26 +225,41 @@ public:
 				return GENERALERROR;
 			}
 
-			int healPower = round(((float)creature->getSkillMod("healing_injury_treatment") / 3.f + 20.f) * bfScale);
+			//int healPower = round(((float)creature->getSkillMod("healing_injury_treatment") / 3.f + 20.f) * bfScale);
+			int healPower = 450;
 
 			int healedHealth = creatureTarget->healDamage(creature, CreatureAttribute::HEALTH, healPower);
-			int healedAction = creatureTarget->healDamage(creature, CreatureAttribute::ACTION, healPower, true, false);
+			int healedAction = 0;
+			//int healedAction = creatureTarget->healDamage(creature, CreatureAttribute::ACTION, healPower, true, false);
 
 			sendHealMessage(creature, creatureTarget, healedHealth, healedAction);
-		} else if (tendWound) {
-			uint8 attribute = CreatureAttribute::UNKNOWN;
+		}
+		else if (healDamage) {
+					if (!creatureTarget->hasDamage(CreatureAttribute::HEALTH) && !creatureTarget->hasDamage(CreatureAttribute::ACTION)) {
+						if (creatureTarget == creature)
+							creature->sendSystemMessage("@healing_response:healing_response_61"); //You have no damage to heal.
+						else if (creatureTarget->isPlayerCreature()) {
+							StringIdChatParameter stringId("healing_response", "healing_response_63"); //%NT has no damage to heal.
+							stringId.setTT(creatureTarget->getObjectID());
+							creature->sendSystemMessage(stringId);
+						} else {
+							StringBuffer message;
+							message << creatureTarget->getDisplayedName() << " has no damage to heal.";
+							creature->sendSystemMessage(message.toString());
+						}
+						return GENERALERROR;
+					}
 
-			StringTokenizer args(arguments.toString());
+					//int healPower = round(((float)creature->getSkillMod("healing_injury_treatment") / 3.f + 20.f) * bfScale);
+					int healPower = 1750;
 
-			if(args.hasMoreTokens()) {
-				String specifiedAttribute;
-				args.getStringToken(specifiedAttribute);
+					int healedHealth = creatureTarget->healDamage(creature, CreatureAttribute::HEALTH, healPower);
+					int healedAction = 0;
+					//int healedAction = creatureTarget->healDamage(creature, CreatureAttribute::ACTION, healPower, true, false);
 
-				attribute = CreatureAttribute::getAttribute(specifiedAttribute);
-			} else {
-				attribute = findAttribute(creatureTarget);
-			}
-
+					sendHealMessage(creature, creatureTarget, healedHealth, healedAction);
+				}
+		else if (tendWound) {
 			if (attribute >= CreatureAttribute::MIND)
 				attribute = CreatureAttribute::UNKNOWN;
 
@@ -288,14 +275,15 @@ public:
 				return GENERALERROR;
 			}
 
-			int healPower = round(((float)creature->getSkillMod("healing_wound_treatment") / 3.f + 20.f) * bfScale);
+			//int healPower = round(((float)creature->getSkillMod("healing_wound_treatment") / 3.f + 20.f) * bfScale);
 
+			int healPower = 100;
 			int healedWounds = creatureTarget->healWound(creature, attribute, healPower);
 
 			sendWoundMessage(creature, creatureTarget, attribute, healedWounds);
 
 			if (creatureTarget != creature && healedWounds > 0)
-				awardXp(creature, "medical", round(healedWounds * 2.5f));
+				awardXp(creature, "combat_general", round(healedWounds * 2.5f));
 
 		} else {
 			return GENERALERROR;
@@ -306,9 +294,9 @@ public:
 			playerManager->sendBattleFatigueMessage(creature, creatureTarget);
 		}
 
-		creature->inflictDamage(creature, CreatureAttribute::MIND, mindCostNew, false);
-		creature->addWounds(CreatureAttribute::FOCUS, mindWoundCost);
-		creature->addWounds(CreatureAttribute::WILLPOWER, mindWoundCost);
+		//creature->inflictDamage(creature, CreatureAttribute::MIND, mindCostNew, false);
+		//creature->addWounds(CreatureAttribute::FOCUS, mindWoundCost);
+		//creature->addWounds(CreatureAttribute::WILLPOWER, mindWoundCost);
 
 		doAnimations(creature, creatureTarget);
 

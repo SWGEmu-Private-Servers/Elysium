@@ -5,8 +5,10 @@
 #ifndef CLEARVETERANREWARDCOMMAND_H_
 #define CLEARVETERANREWARDCOMMAND_H_
 
+#include "server/zone/ZoneProcessServer.h"
 #include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/objects/player/PlayerObject.h"
+#include "server/login/account/AccountManager.h"
 
 class ClearVeteranRewardCommand : public QueueCommand {
 public:
@@ -38,10 +40,14 @@ public:
 		}
 
 		ManagedReference<SceneObject*> obj = server->getZoneServer()->getObject(target);
-		if (obj == nullptr || !obj->isPlayerCreature()) {
+		if (obj == NULL || !obj->isPlayerCreature()) {
 			player->sendSystemMessage("SYNTAX: /clearVeteranReward player milestone");
 			return INVALIDPARAMETERS;
 		}
+
+		PlayerManager* playerManager = player->getZoneServer()->getPlayerManager();
+		if( playerManager == NULL )
+			return GENERALERROR;
 
 		CreatureObject* targetCreature = cast<CreatureObject*>( obj.get());
 		PlayerObject* targetGhost = targetCreature->getPlayerObject();
@@ -57,7 +63,7 @@ public:
 		// Get account
 		ManagedReference<Account*> account = targetGhost->getAccount();
 
-		if( account == nullptr ){
+		if( account == NULL ){
 			player->sendSystemMessage("Error finding account");
 			return GENERALERROR;
 		}
@@ -68,7 +74,7 @@ public:
 
 		GalaxyAccountInfo *info = targetGhost->getGalaxyAccountInfo();
 
-		if(info == nullptr)
+		if(info == NULL)
 			return GENERALERROR;
 
 		info->clearVeteranReward(milestone);

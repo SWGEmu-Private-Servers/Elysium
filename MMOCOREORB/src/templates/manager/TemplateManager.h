@@ -8,8 +8,9 @@
 #ifndef TEMPLATEMANAGER_H_
 #define TEMPLATEMANAGER_H_
 
+#include "engine/engine.h"
+
 #include "engine/util/ObjectFactory.h"
-#include "system/util/SynchronizedVectorMap.h"
 
 #include "templates/SharedObjectTemplate.h"
 #include "templates/footprint/StructureFootprint.h"
@@ -18,11 +19,18 @@
 #include "templates/slots/ArrangementDescriptor.h"
 #include "templates/manager/PlanetMapCategoryList.h"
 #include "templates/manager/PlanetMapCategory.h"
-#include "templates/manager/PortalLayoutMap.h"
+
+#include "tre3/TreeArchive.h"
 
 class TemplateCRCMap;
 class ClientTemplateCRCMap;
+class PortalLayoutMap;
+class FloorMeshMap;
+class AppearanceMap;
 
+class FloorMesh;
+class PortalLayout;
+class AppearanceTemplate;
 class TreeDirectory;
 class PaletteTemplate;
 
@@ -34,15 +42,14 @@ class TemplateManager : public Singleton<TemplateManager>, public Logger, public
 	PortalLayoutMap* portalLayoutMap;
 	FloorMeshMap* floorMeshMap;
 	AppearanceMap* appearanceMap;
-	InteriorMap* interiorMap;
 
 	PlanetMapCategoryList planetMapCategoryList;
 
-	SynchronizedVectorMap<String, Reference<StructureFootprint*> > structureFootprints;
+	VectorMap<String, Reference<StructureFootprint*> > structureFootprints;
 
-	SynchronizedVectorMap<String, Reference<SlotId*> > slotDefinitions;
-	SynchronizedVectorMap<String, Reference<SlotDescriptor*> > slotDescriptors;
-	SynchronizedVectorMap<String, Reference<ArrangementDescriptor*> > arrangementDescriptors;
+	VectorMap<String, Reference<SlotId*> > slotDefinitions;
+	VectorMap<String, Reference<SlotDescriptor*> > slotDescriptors;
+	VectorMap<String, Reference<ArrangementDescriptor*> > arrangementDescriptors;
 
 	ReadWriteLock appearanceMapLock;
 
@@ -55,11 +62,6 @@ public:
 	static Lua* luaTemplatesInstance;
 	static AtomicInteger loadedTemplatesCount;
 	static int ERROR_CODE;
-
-#ifdef PLATFORM_WIN
-#undef NO_ERROR
-#endif
-
 	enum TEMPLATE_ERROR_CODE { NO_ERROR = 0, GENERAL_ERROR, NO_TRE_PATH, NO_TRE_FILES,
 		LOAD_TRES_ERROR, SLOT_DEFINITION_FILE_NOT_FOUND,
 		ASSETCUSTOMIZATIONMANAGER_FILE_NOT_FOUND,
@@ -79,9 +81,9 @@ public:
 	TemplateManager();
 	~TemplateManager();
 
-	virtual void registerTemplateObjects();
+	void registerTemplateObjects();
 
-	virtual void loadLuaTemplates();
+	void loadLuaTemplates();
 
 	/**
 	 * Attempts to get the slot descriptor. If the slot descriptor isn't loaded, attempt to load it.
@@ -92,34 +94,33 @@ public:
 	/**
 	 * Attempts to load a Structure Footprint file from the TRE, and places it in the map.
 	 * If the structure footprint already exists in the map, then it is simply returned.
-	 * If the structure footprint cannot be found, then a warning is displayed, and nullptr is returned
+	 * If the structure footprint cannot be found, then a warning is displayed, and NULL is returned
 	 * @param filePath The TRE path to the Structure Footprint file from the root directory.
-	 * @return Returns nullptr if not found, else returns the StructureFootprint.
+	 * @return Returns NULL if not found, else returns the StructureFootprint.
 	 */
-	const StructureFootprint* loadStructureFootprint(const String& filePath);
+	StructureFootprint* loadStructureFootprint(const String& filePath);
 
 	void addTemplate(uint32 key, const String& fullName, LuaObject* templateData);
 
-	const String& getTemplateFile(uint32 key) const;
+	String getTemplateFile(uint32 key);
 
-	SharedObjectTemplate* getTemplate(uint32 key) const;
+	SharedObjectTemplate* getTemplate(uint32 key);
 
 	IffStream* openIffFile(const String& fileName);
 
 	ObjectInputStream* openTreFile(const String& filePath);
 
-	inline bool containsTemplateType(uint32 type) const {
+	inline bool containsTemplateType(uint32 type) {
 		return templateFactory.containsObject(type);
 	}
 
 	FloorMesh* getFloorMesh(const String& fileName);
 	PortalLayout* getPortalLayout(const String& fileName);
-	InteriorLayoutTemplate* getInteriorLayout(const String& fileName);
 	AppearanceTemplate* getAppearanceTemplate(const String& fileName);
 	AppearanceTemplate* instantiateAppearanceTemplate(IffStream* iffStream);
 	PaletteTemplate* getPaletteTemplate(const String& fileName);
 
-	bool existsTemplate(uint32 key) const;
+	bool existsTemplate(uint32 key);
 
 	// LUA
 	void registerFunctions();
@@ -129,27 +130,25 @@ public:
 	static int addTemplateCRC(lua_State* L);
 	static int addClientTemplate(lua_State* L);
 
-	void addClientTemplate(uint32 crc, const String& templateName);
-
-	const PlanetMapCategory* getPlanetMapCategoryByName(const String& name) const {
+	PlanetMapCategory* getPlanetMapCategoryByName(const String& name) {
 		return planetMapCategoryList.get(name);
 	}
 
-	const PlanetMapCategory* getPlanetMapCategoryByCrc(int crc) const {
+	PlanetMapCategory* getPlanetMapCategoryByCrc(int crc) {
 		return planetMapCategoryList.get(crc);
 	}
 
-	const PlanetMapCategory* getPlanetMapCategoryById(int index) const {
-		auto iterator = planetMapCategoryList.iterator();
+	PlanetMapCategory* getPlanetMapCategoryById(int index) {
+		HashTableIterator<int, Reference<PlanetMapCategory*> > iterator(planetMapCategoryList);
 
 		while (iterator.hasNext()) {
-			const Reference<PlanetMapCategory*>& cat = iterator.getNextValue();
+			Reference<PlanetMapCategory*>& cat = iterator.getNextValue();
 
 			if (cat->getIndex() == index)
 				return cat.get();
 		}
 
-		return nullptr;
+		return NULL;
 	}
 
 	/**
@@ -157,21 +156,22 @@ public:
 	 * It attempts to return the StructureFootprint that resides at the specified filepath, but requires
 	 * that it has been loaded previously.
 	 * @param filePath The TRE path of the desired Structure Footprint file.
-	 * @return Returns the StructureFootprint object, or nullptr if it does not exist.
+	 * @return Returns the StructureFootprint object, or NULL if it does not exist.
 	 */
-	const StructureFootprint* getStructureFootprint(const String& filePath) const {
+	StructureFootprint* getStructureFootprint(const String& filePath) {
 		return structureFootprints.get(filePath);
 	}
 
-	bool structureFootprintExists(const String& filePath) const {
+	bool structureFootprintExists(const String& filePath) {
 		return structureFootprints.contains(filePath);
 	}
 
-	const SlotId* getSlotId(const String& slotName) const {
+	SlotId* getSlotId(const String& slotName) {
 		return slotDefinitions.get(slotName);
 	}
 
 	friend class SharedObjectTemplate;
 };
+
 
 #endif /* TEMPLATEMANAGER_H_ */

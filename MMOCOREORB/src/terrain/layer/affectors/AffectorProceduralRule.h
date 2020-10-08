@@ -8,6 +8,8 @@
 #ifndef AFFECTORPROCEDURALRULE_H_
 #define AFFECTORPROCEDURALRULE_H_
 
+#include "../ProceduralRule.h"
+
 class TerrainGenerator;
 
 class AffectorProceduralRule {
@@ -29,17 +31,18 @@ public:
 	}
 
 	virtual void process(float x, float y, float transformValue, float& baseValue, TerrainGenerator* terrainGenerator) {
+
 	}
 
-	inline bool isHeightTypeAffector() const {
+	inline bool isHeightTypeAffector() {
 		return affectorType & HEIGHTTYPE;
 	}
 
-	inline bool isEnvoronmentTypeAffector() const {
+	inline bool isEnvoronmentTypeAffector() {
 		return affectorType & ENVIRONMENT;
 	}
 
-	inline int getAffectorType() const {
+	inline int getAffectorType() {
 		return affectorType;
 	}
 

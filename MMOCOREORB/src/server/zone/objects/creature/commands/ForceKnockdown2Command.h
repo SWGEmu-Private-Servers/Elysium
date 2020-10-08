@@ -5,6 +5,7 @@
 #ifndef FORCEKNOCKDOWN2COMMAND_H_
 #define FORCEKNOCKDOWN2COMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "ForcePowersQueueCommand.h"
 
 class ForceKnockdown2Command : public ForcePowersQueueCommand {
@@ -29,7 +30,7 @@ public:
 
 		ManagedReference<SceneObject*> targetObject = server->getZoneServer()->getObject(target);
 
-		if (targetObject == nullptr || !targetObject->isCreatureObject()) {
+		if (targetObject == NULL || !targetObject->isCreatureObject()) {
 			return INVALIDTARGET;
 		}
 

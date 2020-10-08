@@ -10,6 +10,7 @@
 
 #include "engine/engine.h"
 #include "server/zone/objects/scene/components/ObjectMenuComponent.h"
+#include "server/zone/objects/building/BuildingObject.h"
 
 class SecurityTerminalMenuComponent : public ObjectMenuComponent {
 protected:

@@ -20,10 +20,6 @@ public:
 	ChatRoomMap(int initsize) : rooms(initsize) {
 	}
 
-	ChatRoomMap(const ChatRoomMap& c) : Object(), rooms(c.rooms) {
-
-	}
-
 	void put(uint32 key, ChatRoom* room) {
 		rooms.put(key, room);
 	}

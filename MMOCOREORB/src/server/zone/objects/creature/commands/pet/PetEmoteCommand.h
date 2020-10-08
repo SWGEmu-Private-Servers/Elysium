@@ -9,6 +9,7 @@
 #define PETEMOTECOMMAND_H_
 
 #include "server/zone/objects/creature/commands/QueueCommand.h"
+#include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/objects/creature/ai/AiAgent.h"
 #include "templates/params/creature/CreatureEmote.h"
 #include "server/zone/managers/creature/CreatureManager.h"
@@ -37,11 +38,11 @@ public:
 			return GENERALERROR;
 
 		ManagedReference<AiAgent*> pet = cast<AiAgent*>(creature);
-		if (pet == nullptr)
+		if (pet == NULL)
 			return GENERALERROR;
 
-		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().get().castTo<PetControlDevice*>();
-		if (controlDevice == nullptr)
+		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().castTo<PetControlDevice*>();
+		if (controlDevice == NULL)
 			return GENERALERROR;
 
 		// Creature specific command
@@ -70,14 +71,14 @@ public:
 	int praise(AiAgent* pet) const {
 		Zone* creoZone = pet->getZone();
 
-		if (creoZone == nullptr)
+		if (creoZone == NULL)
 			return GENERALERROR;
 
 		ManagedReference<CreatureManager*> creoManager = creoZone->getCreatureManager();
 		int speciesID = pet->getSpecies();
 		AiSpeciesData* speciesData = creoManager->getAiSpeciesData(speciesID);
 
-		if (speciesData == nullptr)
+		if (speciesData == NULL)
 			return GENERALERROR;
 
 		if (System::random(100) > 50) {
@@ -92,7 +93,6 @@ public:
 			}
 		} else {
 			pet->doAnimation("happy");
-			pet->setPosture(CreaturePosture::UPRIGHT);
 		}
 
 		return SUCCESS;
@@ -121,11 +121,6 @@ public:
 				pet->storeFollowObject();
 
 				Locker clocker(controlDevice, pet);
-
-				if (pet->getPosture() == CreaturePosture::LYINGDOWN || pet->getPosture() == CreaturePosture::SITTING) {
-					pet->setPosture(CreaturePosture::UPRIGHT);
-				}
-
 				controlDevice->setLastCommand(PetManager::FOLLOW);
 
 				pet->activateInterrupt(pet->getLinkedCreature().get(), ObserverEventType::STARTCOMBAT);
@@ -141,5 +136,6 @@ public:
 		return SUCCESS;
 	}
 };
+
 
 #endif /* PETEMOTECOMMAND_H_ */

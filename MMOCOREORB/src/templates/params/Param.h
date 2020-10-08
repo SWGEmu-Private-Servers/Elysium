@@ -8,8 +8,7 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
-#include "system/lang.h"
-#include "engine/util/iffstream/IffStream.h"
+#include "engine/engine.h"
 
 class Param {
 	uint32 type;
@@ -37,9 +36,9 @@ public:
 
 	virtual bool parse(engine::util::Chunk* source) = 0;
 
-	virtual String toString() const = 0;
+	virtual String toString() = 0;
 
-	inline uint32 getType() const {
+	inline uint32 getType() {
 		return type;
 	}
 
@@ -47,25 +46,26 @@ public:
 		type = tp;
 	}
 
-	inline bool isBool() const {
+	inline bool isBool() {
 		return type == BOOL;
 	}
 
-	inline bool isFloat() const {
+	inline bool isFloat() {
 		return type == FLOAT;
 	}
 
-	inline bool isInteger() const {
+	inline bool isInteger() {
 		return type == INTEGER;
 	}
 
-	inline bool isString() const {
+	inline bool isString() {
 		return type == STRING;
 	}
 
-	inline bool isStringId() const {
+	inline bool isStringId() {
 		return type == STRINGID;
 	}
 };
+
 
 #endif /* PARAM_H_ */

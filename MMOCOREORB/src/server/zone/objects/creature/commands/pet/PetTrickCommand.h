@@ -21,9 +21,9 @@ public:
 
 	int doQueueCommand(CreatureObject* creature, const uint64& target, const UnicodeString& arguments) const {
 
-		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().get().castTo<PetControlDevice*>();
+		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().castTo<PetControlDevice*>();
 
-		if (controlDevice == nullptr)
+		if (controlDevice == NULL)
 			return GENERALERROR;
 
 		// Creature specific command
@@ -35,11 +35,11 @@ public:
 
 		// Target is the player commanding pet to perform the trick
 		ManagedReference<SceneObject*> commandTarget = server->getZoneServer()->getObject(target);
-		if (commandTarget == nullptr || !commandTarget->isPlayerCreature())
+		if (commandTarget == NULL || !commandTarget->isPlayerCreature())
 			return GENERALERROR;
 
 		ManagedReference<CreatureObject*> player = cast<CreatureObject*>(commandTarget.get());
-		if( player == nullptr )
+		if( player == NULL )
 			return GENERALERROR;
 
 		StringTokenizer tokenizer(arguments.toString());
@@ -50,10 +50,10 @@ public:
 		int trickNumber = tokenizer.getIntToken();
 
 		ManagedReference<AiAgent*> pet = cast<AiAgent*>(creature);
-		if( pet == nullptr )
+		if( pet == NULL )
 			return GENERALERROR;
 
-		if( pet->getCooldownTimerMap() == nullptr )
+		if( pet->getCooldownTimerMap() == NULL )
 			return GENERALERROR;
 
 		// Check pet states
@@ -93,7 +93,7 @@ public:
 		pet->addShockWounds(-shockHeal, true, false);
 
 		// Heal damage
-		mindHeal = Math::min( mindHeal, pet->getMaxHAM(CreatureAttribute::MIND) - pet->getHAM(CreatureAttribute::MIND) );
+		mindHeal = MIN( mindHeal, pet->getMaxHAM(CreatureAttribute::MIND) - pet->getHAM(CreatureAttribute::MIND) );
 		pet->inflictDamage(pet, CreatureAttribute::MIND, -mindHeal, false);
 
 		if (pet->getPosture() != CreaturePosture::UPRIGHT && pet->getPosture() != CreaturePosture::SITTING)

@@ -8,7 +8,7 @@
 #ifndef RANGEDINTCUSTOMIZATIONVARIABLES_H_
 #define RANGEDINTCUSTOMIZATIONVARIABLES_H_
 
-#include "engine/util/iffstream/IffStream.h"
+#include "engine/engine.h"
 #include "templates/params/RangedIntCustomizationVariable.h"
 
 class RangedIntCustomizationVariables : public Param {
@@ -33,7 +33,7 @@ public:
 		//std::cout << "DELETING RangedIntCustomizationVariables\n";
 	}
 
-	String toString() const;
+	String toString();
 
 	void toString(String& str) {
 		//std::cout << "entering void toString(QString& str)\n";
@@ -44,5 +44,6 @@ public:
 
 	void parseType1(IffStream* source);
 };
+
 
 #endif /* RANGEDINTCUSTOMIZATIONVARIABLES_H_ */

@@ -7,8 +7,13 @@
 
 #include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/objects/tangible/pharmaceutical/RevivePack.h"
+#include "server/zone/objects/tangible/pharmaceutical/RangedStimPack.h"
 #include "server/zone/ZoneServer.h"
 #include "server/zone/managers/player/PlayerManager.h"
+#include "server/zone/objects/creature/events/InjuryTreatmentTask.h"
+#include "server/zone/objects/creature/buffs/Buff.h"
+#include "server/zone/objects/creature/buffs/DelayedBuff.h"
+#include "server/zone/packets/object/CombatAction.h"
 
 class RevivePlayerCommand : public QueueCommand {
 	float mindCost;
@@ -28,7 +33,7 @@ public:
 			return 0;
 		}
 
-		if (revivePack == nullptr) {
+		if (revivePack == NULL) {
 			creature->sendSystemMessage("@healing_response:cannot_resuscitate_kit"); //You cannot resuscitate someone without a resuscitation kit!
 			return false;
 		}
@@ -45,7 +50,7 @@ public:
 
 		ManagedReference<GroupObject*> group = creature->getGroup();
 
-		if (group == nullptr || !group->hasMember(creatureTarget)) {
+		if (group == NULL || !group->hasMember(creatureTarget)) {
 			if (creature->isPlayerCreature()) {
 				CreatureObject* player = cast<CreatureObject*>(creature);
 				CreatureObject* consentOwner = cast<CreatureObject*>( creatureTarget);
@@ -53,18 +58,17 @@ public:
 				PlayerObject* ghost = consentOwner->getPlayerObject();
 
 				if (!ghost->hasInConsentList(player->getFirstName().toLowerCase())) {
-					if ((consentOwner->getWeapon() != nullptr && consentOwner->getWeapon()->isJediWeapon()) || consentOwner->hasSkill("force_title_jedi_rank_02")) {
-						creature->sendSystemMessage("@healing_response:jedi_must_consent"); // You must have consent from a jedi resuscitation target!
-						return false;
-					} else {
-						creature->sendSystemMessage("@healing_response:must_be_grouped"); //You must be grouped with or have consent from your resuscitation target!
-						return false;
-					}
+					creature->sendSystemMessage("@healing_response:must_be_grouped"); //You must be grouped with or have consent from your resuscitation target!
+					return false;
 				}
-
+				/*if (!player->hasConsentFrom(consentOwner)) {
+					creature->sendSystemMessage("@healing_response:must_be_grouped"); //You must be grouped with or have consent from your resuscitation target!
+					return false;
+				}*/
 			} else {
 				return false;
 			}
+
 		}
 
 		if (creature->getHAM(CreatureAttribute::MIND) < mindCostNew) {
@@ -115,7 +119,7 @@ public:
 		SceneObject* inventory = creature->getSlottedObject("inventory");
 		int medicineUse = creature->getSkillMod("healing_ability");
 
-		if (inventory != nullptr) {
+		if (inventory != NULL) {
 			for (int i = 0; i < inventory->getContainerObjectsSize(); ++i) {
 				SceneObject* object = inventory->getContainerObject(i);
 
@@ -133,7 +137,7 @@ public:
 			}
 		}
 
-		return nullptr;
+		return NULL;
 	}
 
 	void doAnimations(CreatureObject* creature, CreatureObject* creatureTarget) const {
@@ -154,11 +158,11 @@ public:
 
 		ManagedReference<SceneObject*> object = server->getZoneServer()->getObject(target);
 
-		if (object != nullptr) {
+		if (object != NULL) {
 			if (!object->isCreatureObject()) {
 				TangibleObject* tangibleObject = dynamic_cast<TangibleObject*>(object.get());
 
-				if (tangibleObject != nullptr && tangibleObject->isAttackableBy(creature)) {
+				if (tangibleObject != NULL && tangibleObject->isAttackableBy(creature)) {
 					object = creature;
 				} else {
 					creature->sendSystemMessage("@healing_response:healing_response_a2"); //You cannot apply resuscitation medication without a valid target!
@@ -190,15 +194,15 @@ public:
 
 		parseModifier(arguments.toString(), objectId);
 
-		ManagedReference<RevivePack*> revivePack = nullptr;
+		ManagedReference<RevivePack*> revivePack = NULL;
 
 		SceneObject* inventory = creature->getSlottedObject("inventory");
 
-		if (inventory != nullptr) {
+		if (inventory != NULL) {
 			revivePack = inventory->getContainerObject(objectId).castTo<RevivePack*>();
 		}
 
-		if (revivePack == nullptr)
+		if (revivePack == NULL)
 			revivePack = findRevivePack(creature);
 
 		int mindCostNew = creature->calculateCostAdjustment(CreatureAttribute::FOCUS, mindCost);
@@ -206,17 +210,15 @@ public:
 		if (!canPerformSkill(creature, creatureTarget, revivePack, mindCostNew))
 			return 0;
 
-		int healthToHeal = Math::max(1, (int) round(revivePack->getHealthHealed()));
-		int actionToHeal = Math::max(1, (int) round(revivePack->getActionHealed()));
-		int mindToHeal = Math::max(1, (int) round(revivePack->getMindHealed()));
+		int healthToHeal = MAX(1, (int) round(revivePack->getHealthHealed()));
+		int actionToHeal = MAX(1, (int) round(revivePack->getActionHealed()));
+		int mindToHeal = MAX(1, (int) round(revivePack->getMindHealed()));
 
 		int healedHealth = creatureTarget->healDamage(creature, CreatureAttribute::HEALTH, healthToHeal);
 		int healedAction = creatureTarget->healDamage(creature, CreatureAttribute::ACTION, actionToHeal);
 		int healedMind = creatureTarget->healDamage(creature, CreatureAttribute::MIND, mindToHeal);
 
 		creatureTarget->setPosture(CreaturePosture::UPRIGHT);
-		
-		creatureTarget->removeFeignedDeath();
 
 		int healedHealthWounds = creatureTarget->healWound(creature, CreatureAttribute::HEALTH, (int) (round(revivePack->getHealthWoundHealed())));
 		int healedActionWounds = creatureTarget->healWound(creature, CreatureAttribute::ACTION, (int) (round(revivePack->getActionWoundHealed())));
@@ -224,7 +226,7 @@ public:
 
 		creature->inflictDamage(creature, CreatureAttribute::MIND, mindCostNew, false);
 
-		if (revivePack != nullptr) {
+		if (revivePack != NULL) {
 			Locker locker(revivePack);
 
 			revivePack->decreaseUseCount();
@@ -239,8 +241,6 @@ public:
 		checkForTef(creature, creatureTarget);
 
 		applyDebuff(creatureTarget);
-
-		creatureTarget->notifyObservers(ObserverEventType::CREATUREREVIVED, creature, 0);
 
 		return SUCCESS;
 	}

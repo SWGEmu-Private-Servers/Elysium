@@ -8,8 +8,7 @@
 #ifndef LOOTGROUPTEMPLATE_H_
 #define LOOTGROUPTEMPLATE_H_
 
-#include "system/lang.h"
-#include "engine/lua/LuaObject.h"
+#include "engine/engine.h"
 
 class LootGroupTemplate : public Object {
 	String templateName;
@@ -43,7 +42,7 @@ public:
 		return *this;
 	}
 
-	String getLootGroupEntryForRoll(int roll) const {
+	String getLootGroupEntryForRoll(int roll) {
 		int totalChance = 0;
 
 		for (int i = 0; i < entryMap.size(); ++i) {
@@ -60,7 +59,7 @@ public:
 		return "";
 	}
 
-	int getLootGroupIntEntryForRoll(int roll) const {
+	int getLootGroupIntEntryForRoll ( int roll ) {
 		int totalChance = 0;
 
 		for (int i = 0; i < entryMap.size(); ++i) {
@@ -76,11 +75,13 @@ public:
 		return -1;
 	}
 
-	int size() const {
+
+	int size(){
 		return entryMap.size();
 	}
 
-	String getLootGroupEntryAt(int i) const {
+	String getLootGroupEntryAt( int i ){
+
 		if( i < 0 )
 			return "";
 
@@ -89,7 +90,9 @@ public:
 
 		VectorMapEntry<String, int>* entry = &entryMap.elementAt(i);
 		return entry->getKey();
+
 	}
+
 
 	void readObject(LuaObject* lua) {
 		LuaObject lootItems = lua->getObjectField("lootItems");
@@ -118,7 +121,7 @@ public:
 		lootItems.pop();
 	}
 
-	const String& getTemplateName() const {
+	String& getTemplateName() {
 		return templateName;
 	}
 };

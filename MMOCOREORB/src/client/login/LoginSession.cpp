@@ -8,7 +8,7 @@
 #include "LoginClient.h"
 #include "LoginClientThread.h"
 
-#include "server/login/packets/AccountVersionMessage.h"
+#include "../../server/login/packets/AccountVersionMessage.h"
 
 #include "LoginSession.h"
 
@@ -16,7 +16,7 @@ LoginSession::LoginSession(int instance) : Logger("LoginSession" + String::value
 	selectedCharacter = -1;
 	LoginSession::instance = instance;
 
-	loginThread = nullptr;
+	loginThread = NULL;
 
 	accountID = 0;
 	sessionID = 0;
@@ -24,7 +24,7 @@ LoginSession::LoginSession(int instance) : Logger("LoginSession" + String::value
 }
 
 LoginSession::~LoginSession() {
-	if (loginThread != nullptr)
+	if (loginThread != NULL)
 		loginThread->stop();
 }
 
@@ -53,16 +53,10 @@ void LoginSession::run() {
 	char passwordinput[32];
 
 	info("insert user");
-	auto res = fgets(userinput, sizeof(userinput), stdin);
-
-	if (!res)
-		return;
+	fgets(userinput, sizeof(userinput), stdin);
 
 	info("insert password", true);
-	res = fgets(passwordinput, sizeof(passwordinput), stdin);
-
-	if (!res)
-		return;
+	fgets(passwordinput, sizeof(passwordinput), stdin);
 
 	String user, password;
 	user = userinput;

@@ -2,7 +2,11 @@
 
 #include "engine/engine.h"
 #include "server/zone/objects/tangible/tool/recycle/RecycleTool.h"
+#include "server/zone/Zone.h"
+#include "server/zone/objects/tangible/Container.h"
+#include "server/zone/objects/tangible/TangibleObject.h"
 #include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/objects/player/PlayerObject.h"
 #include "templates/tangible/tool/RecycleToolTemplate.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 
@@ -18,7 +22,7 @@ void RecycleToolImplementation::loadTemplateData(SharedObjectTemplate* templateD
 
 	RecycleToolTemplate* recycleToolData = dynamic_cast<RecycleToolTemplate*>(templateData);
 
-	if (recycleToolData == nullptr) {
+	if (recycleToolData == NULL) {
 		throw Exception("invalid template for RecycleTool");
 	}
 
@@ -35,14 +39,14 @@ void RecycleToolImplementation::fillObjectMenuResponse(ObjectMenuResponse* menuR
 
 	SharedObjectTemplate* templateData = TemplateManager::instance()->getTemplate(_this.getReferenceUnsafeStaticCast()->getServerObjectCRC());
 
-	if (templateData == nullptr) {
+	if (templateData == NULL) {
 		error("No template data for: " + String::valueOf(_this.getReferenceUnsafeStaticCast()->getServerObjectCRC()));
 		return;
 	}
 
 	RecycleToolTemplate* recycleToolData = dynamic_cast<RecycleToolTemplate*>(templateData);
 
-	if (recycleToolData == nullptr) {
+	if (recycleToolData == NULL) {
 		error("No RecycleToolTemplate for: " + String::valueOf(_this.getReferenceUnsafeStaticCast()->getServerObjectCRC()));
 		return;
 	}
@@ -58,7 +62,7 @@ int RecycleToolImplementation::handleObjectMenuSelect(CreatureObject* player, by
 	if (isASubChildOf(player)) {
 		SharedObjectTemplate* templateData = TemplateManager::instance()->getTemplate(_this.getReferenceUnsafeStaticCast()->getServerObjectCRC());
 
-		if (templateData == nullptr || !templateData->isRecycleToolTemplate())
+		if (templateData == NULL || !templateData->isRecycleToolTemplate())
 			return 1;
 
 		RecycleToolTemplate* recycleToolData = dynamic_cast<RecycleToolTemplate*>(templateData);

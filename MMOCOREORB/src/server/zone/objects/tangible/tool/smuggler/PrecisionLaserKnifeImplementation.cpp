@@ -19,7 +19,7 @@ int PrecisionLaserKnifeImplementation::handleObjectMenuSelect(CreatureObject* pl
 	if (!isASubChildOf(player))
 		return 0;
 
-	if(!player->hasSkill("combat_smuggler_novice")){
+	if(!player->hasSkill("secondary_scoundrel_novice")){
 		player->sendSystemMessage("You must be at least a Novice Smuggler to use this tool.");
 		return 0;
 	}
@@ -31,23 +31,23 @@ int PrecisionLaserKnifeImplementation::handleObjectMenuSelect(CreatureObject* pl
 	ZoneServer* zs = player->getZoneServer();
 	ManagedReference<TangibleObject*> target = zs->getObject(targetID, true).castTo<TangibleObject*>();
 
-	if (target == nullptr || (!target->isSliceable() && !target->isSecurityTerminal())) {
+	if (target == NULL || (!target->isSliceable() && !target->isSecurityTerminal())) {
 		player->sendSystemMessage("You cannot slice that.");
 		return 0;
 	}
 
 	if (target->isMissionTerminal()) {
-		if (!player->hasSkill("combat_smuggler_slicing_01")) {
+		if (!player->hasSkill("secondary_scoundrel_novice")) {
 			return 0;
 		}
 
 		MissionTerminal* terminal = target.castTo<MissionTerminal*>();
 
-		if (terminal == nullptr || terminal->isBountyTerminal())
+		if (terminal == NULL || terminal->isBountyTerminal())
 			return 0;
 
-		ManagedReference<CityRegion*> city = player->getCityRegion().get();
-		if (city != nullptr && !city->isClientRegion() && city->isBanned(player->getObjectID())) {
+		ManagedReference<CityRegion*> city = player->getCityRegion();
+		if (city != NULL && !city->isClientRegion() && city->isBanned(player->getObjectID())) {
 			player->sendSystemMessage("@city/city:banned_services"); // You are banned from using this city's services.
 			return 0;
 		}
@@ -60,17 +60,17 @@ int PrecisionLaserKnifeImplementation::handleObjectMenuSelect(CreatureObject* pl
 			return 0;
 		}
 
-	} else if (target->isWeaponObject() && !player->hasSkill("combat_smuggler_slicing_02")) {
+	} else if (target->isWeaponObject() && !player->hasSkill("secondary_scoundrel_novice")) {
 		return 0;
-	} else if (target->isArmorObject() && !player->hasSkill("combat_smuggler_slicing_03")) {
+	} else if (target->isArmorObject() && !player->hasSkill("secondary_scoundrel_novice")) {
 		return 0;
 	} else if (target->isSecurityTerminal()) {
 		Zone* zone = target->getZone();
-		if (zone == nullptr)
+		if (zone == NULL)
 			return 0;
 
 		GCWManager* gcwMan = zone->getGCWManager();
-		if (gcwMan == nullptr)
+		if (gcwMan == NULL)
 			return 0;
 
 		if (!gcwMan->canStartSlice(player, target))

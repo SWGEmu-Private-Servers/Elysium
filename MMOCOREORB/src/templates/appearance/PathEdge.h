@@ -5,12 +5,12 @@
  *      Author: TheAnswer
  */
 
-#ifndef PATHEDGE_H_
-#define PATHEDGE_H_
+#ifndef SRC_SERVER_ZONE_TEMPLATES_APPEARANCE_PATHEDGE_H_
+#define SRC_SERVER_ZONE_TEMPLATES_APPEARANCE_PATHEDGE_H_
 
-#include "engine/util/iffstream/IffStream.h"
+#include "engine/engine.h"
 
-class PathEdge {
+class PathEdge : public Object  {
 	int from, to;
 
 	float laneWidthRight;
@@ -43,15 +43,6 @@ public:
 		return laneWidthLeft;
 	}
 
-	bool toBinaryStream(ObjectOutputStream* stream) {
-		return false;
-	}
-
-	bool parseFromBinaryStream(ObjectInputStream* stream) {
-		return false;
-	}
-
-
 };
 
-#endif /* PATHEDGE_H_ */
+#endif /* SRC_SERVER_ZONE_TEMPLATES_APPEARANCE_PATHEDGE_H_ */

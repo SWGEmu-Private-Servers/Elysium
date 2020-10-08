@@ -4,19 +4,18 @@
 
 package server.zone.objects.player.sui;
 
+
+import engine.lua.LuaObject;
 import server.zone.objects.scene.SceneObject;
 import server.zone.objects.creature.CreatureObject;
 import server.zone.objects.player.PlayerObject;
+import server.zone.objects.creature.CreatureObject;
+import system.io.StringTokenizer;
 import engine.service.proto.BaseMessage;
 
 include server.zone.packets.ui.SuiCreatePageMessage;
 include server.zone.objects.player.sui.SuiWindowType;
 include server.zone.objects.player.sui.SuiCallback;
-
-include engine.core.ManagedObject;
-include engine.log.Logger;
-
-include system.util.Vector;
 
 class SuiBox extends ManagedObject implements Logger {
 	@weakReference
@@ -88,15 +87,9 @@ class SuiBox extends ManagedObject implements Logger {
 	public void initialize() {
 		Logger.setLoggingName("SuiBox");
 
-		CreatureObject strongRef = player;
+		PlayerObject ghost = player.getPlayerObject();
 
-		if (strongRef) {
-			PlayerObject ghost = strongRef.getPlayerObject();
-
-			if (ghost) {
-				boxID = ghost.getNewSuiBoxID(windowType);
-			}
-		}
+		boxID = ghost.getNewSuiBoxID(windowType);
 
 		handlerStr = "msgSelected";
 
@@ -133,7 +126,6 @@ class SuiBox extends ManagedObject implements Logger {
 	 * the object with clearOptions()
 	 * \sa addHeader(), clearOptions()
 	 */
-	@local
 	public native void generateHeader(SuiCreatePageMessage message);
 
 	/**
@@ -143,7 +135,6 @@ class SuiBox extends ManagedObject implements Logger {
 	 * reset the object with clearOptions()
 	 * \sa addSetting(), clearOptions()
 	 */
-	@local
 	public native void generateBody(SuiCreatePageMessage message);
 
 
@@ -152,10 +143,8 @@ class SuiBox extends ManagedObject implements Logger {
 	 * Footer of SuiCreatePageMessage is largely unknown. Subject to change based on research. See trac
 	 * \param type Type of footer to place into packet
 	 */
-	@local
 	public native void generateFooter(SuiCreatePageMessage message, int type = 0);
 
-	@local
 	public abstract BaseMessage generateMessage() {
 		return null;
 	}
@@ -164,7 +153,6 @@ class SuiBox extends ManagedObject implements Logger {
 	 * Use to close the UI object on the client.
 	 * Sends the SuiForceClosePage packet to the client.
 	 */
-	@local
 	public native BaseMessage generateCloseMessage();
 
 	/**

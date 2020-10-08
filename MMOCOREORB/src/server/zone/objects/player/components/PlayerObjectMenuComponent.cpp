@@ -3,7 +3,9 @@
 		See file COPYING for copying conditions. */
 
 #include "PlayerObjectMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
+#include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/group/GroupObject.h"
@@ -18,7 +20,7 @@ void PlayerObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 	PlayerObject* ghost = player->getPlayerObject();
 	PlayerObject* targetGhost = creature->getPlayerObject();
 
-	if (group != nullptr) {
+	if (group != NULL) {
 		if (group->hasMember(player))
 			menuResponse->addRadialMenuItem(51, 3, "@sui:teach");
 	}
@@ -36,7 +38,7 @@ void PlayerObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 	}
 
 	// Allow admins to grant divorce to married players
-	if (targetGhost != nullptr && targetGhost->isMarried() && ghost != nullptr && ghost->isPrivileged()) {
+	if (targetGhost != NULL && targetGhost->isMarried() && ghost != NULL && ghost->isPrivileged()) {
 		menuResponse->addRadialMenuItem(117, 3, "@unity:mnu_divorce"); // "Divorce"
 	}
 }
@@ -62,14 +64,14 @@ int PlayerObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject, 
 		player->executeObjectControllerAction(0x5041F83A, sceneObject->getObjectID(), ""); // teach
 		break;
 	case 117:
-		if (ghost != nullptr && ghost->isPrivileged()) {
+		if (ghost != NULL && ghost->isPrivileged()) {
 			PlayerManager* playerManager = player->getZoneServer()->getPlayerManager();
 
-			Core::getTaskManager()->executeTask([=] () {
-				Locker locker(ownerPlayer);
+			EXECUTE_TASK_2(ownerPlayer, playerManager, {
+				Locker locker(ownerPlayer_p);
 
-				playerManager->grantDivorce(ownerPlayer);
-			}, "GrantDivorceLambda");
+				playerManager_p->grantDivorce(ownerPlayer_p);
+			});
 		}
 		break;
 	}

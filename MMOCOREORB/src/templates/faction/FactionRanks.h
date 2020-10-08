@@ -22,7 +22,7 @@ public:
 
 	void readObject(DataTableIff* table);
 
-	const FactionRank& getRank(int index) {
+	FactionRank& getRank(int index) {
 		return ranks.get(index);
 	}
 

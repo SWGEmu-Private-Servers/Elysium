@@ -78,6 +78,7 @@ public:
 	}
 	void parseVariableData(const String& varName, LuaObject* data) {
 		lua_State* state = data->getLuaState();
+		TemplateManager* templateManager = TemplateManager::instance();
 
 		if (varName == "primary") {
 			primaryAttributes.removeAll();

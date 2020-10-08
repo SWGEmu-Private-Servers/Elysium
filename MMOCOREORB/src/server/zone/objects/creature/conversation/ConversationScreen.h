@@ -8,6 +8,7 @@
 #include "engine/engine.h"
 #include "server/chat/StringIdChatParameter.h"
 #include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/packets/object/NpcConversationMessage.h"
 #include "server/zone/packets/object/StopNpcConversation.h"
 #include "server/zone/packets/object/StringList.h"
@@ -71,8 +72,6 @@ class ConversationScreen : public Object {
 
 	UnicodeString customText;
 
-	String animation;
-
 	Vector<Reference<ConversationOption*> > options;
 
 	bool stopConversation, readOnly;
@@ -93,7 +92,6 @@ public:
 		stopConversation = objectToCopy.stopConversation;
 		readOnly = objectToCopy.readOnly;
 		customText = objectToCopy.customText;
-		animation = objectToCopy.animation;
 	}
 
 	ConversationScreen* cloneScreen() {
@@ -141,7 +139,7 @@ public:
 
 		Reference<ConversationOption*> opt = options.get(idx);
 
-		if (opt != nullptr)
+		if (opt != NULL)
 			text = opt->getOptionText().getFullPath();
 
 		return text;
@@ -152,7 +150,7 @@ public:
 
 		Reference<ConversationOption*> opt = options.get(idx);
 
-		if (opt != nullptr)
+		if (opt != NULL)
 			link = opt->getLinkedScreenID();
 
 		return link;
@@ -181,7 +179,7 @@ public:
 		for (int i = 0; i < options.size(); ++i) {
 			Reference<ConversationOption*> option = options.get(i);
 
-			if (option == nullptr)
+			if (option == NULL)
 				continue;
 
 			optionsList->insertOption(option->getDisplayedName());
@@ -190,20 +188,17 @@ public:
 		player->sendMessage(message);
 		player->sendMessage(optionsList);
 
-		if (!animation.isEmpty())
-			npc->doAnimation(animation);
-
 		ConversationScreen* screenToSave = this;
 
 		//Check if the conversation should be stopped.
 		if (stopConversation) {
 			player->sendMessage(new StopNpcConversation(player, npc->getObjectID()));
 			npc->notifyObservers(ObserverEventType::STOPCONVERSATION, player);
-			screenToSave = nullptr;
+			screenToSave = NULL;
 		}
 
 		Reference<ConversationSession*> session = player->getActiveSession(SessionFacadeType::CONVERSATION).castTo<ConversationSession* >();
-		if (session != nullptr) {
+		if (session != NULL) {
 			session->setLastConversationScreen(screenToSave);
 		}
 	}
@@ -216,7 +211,6 @@ public:
 		screenID = luaObject->getStringField("id");
 		dialogText.setStringId(luaObject->getStringField("leftDialog"));
 		customText = luaObject->getStringField("customDialogText");
-		animation = luaObject->getStringField("animation");
 
 		if (luaObject->getStringField("stopConversation").toLowerCase() == "true") {
 			stopConversation = true;
@@ -234,7 +228,7 @@ public:
 			String optionString = luaObj.getStringAt(1);
 			String linkedId = luaObj.getStringAt(2);
 
-			Reference<ConversationOption*> option = nullptr;
+			Reference<ConversationOption*> option = NULL;
 
 			if (optionString.beginsWith("@"))
 				option = new ConversationOption(StringIdChatParameter(optionString), linkedId);

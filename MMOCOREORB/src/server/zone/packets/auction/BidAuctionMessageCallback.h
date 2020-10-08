@@ -22,7 +22,6 @@ public:
 	BidAuctionMessageCallback(ZoneClientSession* client, ZoneProcessServer* server) :
 			MessageCallback(client, server), objectid(0), price1(0), price2(0) {
 
-		setCustomTaskQueue("slowQueue");
 	}
 
 	void parse(Message* message) {
@@ -34,14 +33,14 @@ public:
 	void run() {
 		ManagedReference<CreatureObject*> player = client->getPlayer();
 
-		if (player == nullptr)
+		if (player == NULL)
 			return;
 
 		Locker locker(player);
 
 		AuctionManager* auctionManager = server->getZoneServer()->getAuctionManager();
 
-		if (auctionManager != nullptr) {
+		if (auctionManager != NULL) {
 			Locker clocker(auctionManager, player);
 
 			auctionManager->buyItem(player, objectid, price1, price2);

@@ -10,15 +10,15 @@
 
 bool DroidContainerComponent::checkContainerPermission(SceneObject* sceneObject, CreatureObject* creature, uint16 permission) const {
 
-	ManagedReference<SceneObject*> p = sceneObject->getParent().get();
+	ManagedReference<SceneObject*> p = sceneObject->getParent();
 
-	if (p == nullptr || !p->isDroidObject()) {
+	if (p == NULL || !p->isDroidObject()) {
 		return false;
 	}
 
 	DroidObject* droid = p.castTo<DroidObject*>();
 
-	if(droid == nullptr){
+	if(droid == NULL){
 		return false;
 	}
 
@@ -51,7 +51,7 @@ int DroidContainerComponent::canAddObject(SceneObject* sceneObject, SceneObject*
 		return TransferErrorCode::CANTADD;
 	}
 
-	ManagedReference<SceneObject*> p = sceneObject->getParent().get();
+	ManagedReference<SceneObject*> p = sceneObject->getParent();
 	if (p) {
 		DroidObject* droid = p.castTo<DroidObject*>();
 		if (droid) {

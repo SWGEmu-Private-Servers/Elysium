@@ -6,6 +6,7 @@
 #define DROIDSTIMPACKMODULEDATACOMPONENT_H_
 
 #include "BaseDroidModuleComponent.h"
+#include "engine/core/ManagedReference.h"
 #include "server/zone/objects/tangible/pharmaceutical/StimPack.h"
 
 namespace server {
@@ -29,7 +30,7 @@ public:
 
 	~DroidStimpackModuleDataComponent();
 
-	String getModuleName() const;
+	String getModuleName();
 
 	void initializeTransientMembers();
 
@@ -37,7 +38,7 @@ public:
 
 	int getBatteryDrain();
 
-	String toString() const;
+	String toString();
 
 	void onCall();
 

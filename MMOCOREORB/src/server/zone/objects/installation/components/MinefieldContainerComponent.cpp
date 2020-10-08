@@ -4,26 +4,29 @@
  *  Created on: Feb 1, 2013
  *      Author: root
  */
-
 #include "MinefieldContainerComponent.h"
-#include "server/zone/objects/installation/InstallationObject.h"
+#include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/player/FactionStatus.h"
 #include "templates/params/creature/CreatureFlag.h"
 
 bool MinefieldContainerComponent::checkContainerPermission(SceneObject* sceneObject, CreatureObject* creature, uint16 permission) const {
-	if (sceneObject == nullptr || !sceneObject->isTangibleObject())
+	if (sceneObject == NULL || !sceneObject->isTangibleObject())
 		return false;
 
 	InstallationObject* minefield = cast<InstallationObject*>(sceneObject);
 
-	if (creature == nullptr || minefield == nullptr)
+	if (creature == NULL || minefield == NULL)
 		return false;
 
 	if (creature->getFaction() == 0 || minefield->getFaction() == 0)
 		return false;
 
+	PlayerObject* ghost = creature->getPlayerObject();
+	if (ghost == NULL)
+		return false;
+
 	if (permission == ContainerPermissions::OPEN || permission == ContainerPermissions::MOVEIN) {
-		if (minefield->getFaction() == creature->getFaction() && creature->getFactionStatus() != FactionStatus::ONLEAVE)
+		if (minefield->getFaction() == creature->getFaction() && ghost->getFactionStatus() != FactionStatus::ONLEAVE)
 			return true;
 		else
 			return false;
@@ -60,7 +63,7 @@ int MinefieldContainerComponent::canAddObject(SceneObject* sceneObject, SceneObj
  */
 int MinefieldContainerComponent::notifyObjectInserted(SceneObject* sceneObject, SceneObject* object) const {
 	ManagedReference<InstallationObject*> installation = cast<InstallationObject*>(sceneObject);
-	if (installation == nullptr)
+	if (installation == NULL)
 		return 1;
 
 	// mine isn't attackable if it has mines
@@ -77,11 +80,11 @@ int MinefieldContainerComponent::notifyObjectInserted(SceneObject* sceneObject, 
  * @param object object that has been inserted
  */
 int MinefieldContainerComponent::notifyObjectRemoved(SceneObject* sceneObject, SceneObject* object, SceneObject* destination) const {
-	if (sceneObject == nullptr || object == nullptr)
+	if (sceneObject == NULL || object == NULL)
 		return 1;
 
 	ManagedReference<TangibleObject*> installation = cast<TangibleObject*>(sceneObject);
-	if (installation == nullptr)
+	if (installation == NULL)
 		return 1;
 
 	if (installation->getContainerObjectsSize() == 0 && !(installation->getPvpStatusBitmask() & CreatureFlag::ATTACKABLE)) {

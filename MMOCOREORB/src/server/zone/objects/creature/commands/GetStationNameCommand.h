@@ -5,6 +5,7 @@
 #ifndef GETSTATIONNAMECOMMAND_H_
 #define GETSTATIONNAMECOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "server/login/account/Account.h"
 
 class GetStationNameCommand : public QueueCommand {
@@ -26,7 +27,7 @@ public:
 		if(!creature->isPlayerCreature())
 			return INVALIDTARGET;
 
-		ManagedReference<CreatureObject* > targetCreature = nullptr;
+		ManagedReference<CreatureObject* > targetCreature = NULL;
 		ManagedReference<PlayerManager*> playerManager = server->getPlayerManager();
 
 		StringTokenizer args(arguments.toString());
@@ -43,11 +44,11 @@ public:
 					server->getZoneServer()->getObject(target).castTo<CreatureObject*>();
 		}
 
-		if(targetCreature == nullptr || !targetCreature->isPlayerCreature())
+		if(targetCreature == NULL || !targetCreature->isPlayerCreature())
 			return INVALIDTARGET;
 
 		ManagedReference<Account*> account = targetCreature->getPlayerObject()->getAccount();
-		if(account == nullptr) {
+		if(account == NULL) {
 			creature->sendSystemMessage("Account not found");
 			return SUCCESS;
 		}

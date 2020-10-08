@@ -5,7 +5,11 @@
 #ifndef RETREATCOMMAND_H_
 #define RETREATCOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "SquadLeaderCommand.h"
+#include "server/zone/managers/combat/CombatManager.h"
+#include "CombatQueueCommand.h"
+#include "server/zone/objects/player/events/setNormalTask.h"
 
 class RetreatCommand : public SquadLeaderCommand {
 public:
@@ -22,7 +26,7 @@ public:
 
 		Zone* zone = creature->getZone();
 
-		if (zone == nullptr) {
+		if (creature->getZone() == NULL) {
 			return false;
 		}
 
@@ -62,12 +66,12 @@ public:
 
 		ManagedReference<CreatureObject*> player = cast<CreatureObject*>(creature);
 
-		if (player == nullptr)
+		if (player == NULL)
 			return GENERALERROR;
 
 		ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
 
-		if (ghost == nullptr)
+		if (ghost == NULL)
 			return GENERALERROR;
 
 		ManagedReference<GroupObject*> group = player->getGroup();
@@ -87,7 +91,7 @@ public:
 		for (int i = 1; i < group->getGroupSize(); ++i) {
 			ManagedReference<CreatureObject*> member = group->getGroupMember(i);
 
-			if (member == nullptr || !member->isPlayerCreature())
+			if (member == NULL || !member->isPlayerCreature() || member->getZone() != creature->getZone())
 				continue;
 
 			if (!isValidGroupAbilityTarget(creature, member, false))
@@ -103,8 +107,9 @@ public:
 
 		if (!ghost->getCommandMessageString(STRING_HASHCODE("retreat")).isEmpty() && creature->checkCooldownRecovery("command_message")) {
 			UnicodeString shout(ghost->getCommandMessageString(STRING_HASHCODE("retreat")));
- 	 	 	server->getChatManager()->broadcastChatMessage(player, shout, 0, 80, player->getMoodID(), 0, ghost->getLanguageID());
+ 	 	 	server->getChatManager()->broadcastChatMessage(player, shout, 0, 0, 80, ghost->getLanguageID());
  	 	 	creature->updateCooldownTimer("command_message", 30 * 1000);
+ 	 	 	creature->playEffect("clienteffect/off_charge.cef", "");
 		}
 
 		return SUCCESS;
@@ -112,7 +117,7 @@ public:
 
 
 	void doRetreat(CreatureObject* player) const {
-		if (player == nullptr)
+		if (player == NULL)
 			return;
 
 		if (!checkRetreat(player))
@@ -132,6 +137,8 @@ public:
 		StringIdChatParameter startStringId("cbt_spam", "burstrun_start_single");
 		StringIdChatParameter endStringId("cbt_spam", "burstrun_stop_single");
 
+		player->playEffect("clienteffect/off_charge.cef", "");
+
 		int duration = 30;
 
 		ManagedReference<Buff*> buff = new Buff(player, actionCRC, duration, BuffType::SKILL);
@@ -144,6 +151,7 @@ public:
 		buff->setEndMessage(endStringId);
 
 		player->addBuff(buff);
+
 
 		player->updateCooldownTimer("retreat", 30000);
 

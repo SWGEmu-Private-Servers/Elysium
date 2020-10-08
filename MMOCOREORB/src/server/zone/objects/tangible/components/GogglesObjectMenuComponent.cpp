@@ -9,8 +9,12 @@
 #include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/player/sui/colorbox/SuiColorBox.h"
 #include "GogglesObjectMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
+#include "server/zone/managers/objectcontroller/ObjectController.h"
+#include "server/zone/objects/player/sui/SuiCallback.h"
 #include "server/zone/objects/player/sui/callbacks/ColorGogglesSuiCallback.h"
+#include "server/zone/Zone.h"
 #include "server/zone/ZoneServer.h"
 #include "templates/customization/AssetCustomizationManagerTemplate.h"
 
@@ -39,7 +43,7 @@ int GogglesObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 	if (selectedID == 81 || selectedID == 82) {
 
 		ManagedReference<SceneObject*> parent = sceneObject->getParent().get();
-		if (parent != nullptr && parent->isPlayerCreature()) {
+		if (parent != NULL && parent->isPlayerCreature()) {
 			player->sendSystemMessage("@error_message:equipped_goggles");
 			return 0;
 		}
@@ -48,7 +52,7 @@ int GogglesObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 
 		ZoneServer* server = player->getZoneServer();
 
-		if (server != nullptr) {
+		if (server != NULL) {
 
 			// The color index.
 			String appearanceFilename = sceneObject->getObjectTemplate()->getAppearanceFilename();

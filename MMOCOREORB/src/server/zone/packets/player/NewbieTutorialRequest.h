@@ -12,7 +12,6 @@
 #include "server/zone/managers/director/DirectorManager.h"
 #include "server/zone/Zone.h"
 #include "server/zone/objects/creature/CreatureObject.h"
-#include "server/zone/objects/building/TutorialBuildingObject.h"
 /* Valid action strings found:
  * openCharacterSheet
  * closeCharacterSheet
@@ -71,12 +70,12 @@ public:
 	}
 
 	void run() {
-		if (client == nullptr)
+		if (client == NULL)
 			return;
 
 		ManagedReference<CreatureObject*> player = client->getPlayer();
 
-		if (player == nullptr)
+		if (player == NULL)
 			return;
 
 		Locker locker(player);
@@ -84,25 +83,25 @@ public:
 		//player->info("received response: " + response, true);
 
 		if (response == "zoomCamera") {
-			player->notifyObservers(ObserverEventType::NEWBIETUTORIALZOOMCAMERA, nullptr, 0);
+			player->notifyObservers(ObserverEventType::NEWBIETUTORIALZOOMCAMERA, NULL, 0);
 		} else if (response == "chatbox") {
-			player->notifyObservers(ObserverEventType::CHAT, nullptr, 0);
+			player->notifyObservers(ObserverEventType::CHAT, NULL, 0);
 		} else if (response == "closeHolocron") {
-			player->notifyObservers(ObserverEventType::NEWBIETUTORIALHOLOCRON, nullptr, 0);
+			player->notifyObservers(ObserverEventType::NEWBIETUTORIALHOLOCRON, NULL, 0);
 		} else if (response == "openInventory") {
 			player->notifyObservers(ObserverEventType::NEWBIEOPENINVENTORY);
 		} else if (response == "closeInventory") {
 			player->notifyObservers(ObserverEventType::NEWBIECLOSEINVENTORY);
 		} else if (response == "clientReady") {
-			Zone* zone = player->getZone();
+			if (player->getZone() != NULL && player->getParent() != NULL) {
+				ManagedReference<SceneObject*> par = player->getParent();
 
-			if (zone == nullptr || zone->getZoneName() != "tutorial")
-				return;
+				if (par->getParent() != NULL) {
+					Zone* zone = player->getZone();
 
-			ManagedReference<TutorialBuildingObject*> bldg = player->getParentRecursively(SceneObjectType::TUTORIALBUILDING).castTo<TutorialBuildingObject*>();
-
-			if (bldg != nullptr && bldg->getTutorialOwnerID() == player->getObjectID()) {
-				DirectorManager::instance()->startScreenPlay(player, "TutorialScreenPlay");
+					if (zone->getZoneName() == "tutorial")
+						DirectorManager::instance()->startScreenPlay(player, "TutorialScreenPlay");
+				}
 			}
 		}
 	}

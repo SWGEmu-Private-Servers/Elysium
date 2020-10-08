@@ -7,6 +7,7 @@
 
 #include "BaseDroidModuleComponent.h"
 #include "server/zone/objects/tangible/tool/CraftingStation.h"
+#include "engine/core/ManagedReference.h"
 
 namespace server {
 namespace zone {
@@ -14,6 +15,7 @@ namespace objects {
 namespace tangible {
 namespace components {
 namespace droid {
+
 
 class DroidCraftingModuleDataComponent : public BaseDroidModuleComponent {
 
@@ -27,7 +29,7 @@ public:
 
 	~DroidCraftingModuleDataComponent();
 
-	String getModuleName() const;
+	String getModuleName();
 
 	void initializeTransientMembers();
 
@@ -53,20 +55,20 @@ public:
 
 	bool actsAsCraftingStation();
 
-	String toString() const;
+	String toString();
 
 	// crafting droid module specific
 	CraftingStation* getCraftingStation();
 
-	bool isWeaponDroidGeneric() const;
+	bool isWeaponDroidGeneric();
 
-	bool isFoodChemical() const;
+	bool isFoodChemical();
 
-	bool isClothingArmor() const;
+	bool isClothingArmor();
 
-	bool isStructureFurniture() const;
+	bool isStructureFurniture();
 
-	bool isShip() const;
+	bool isShip();
 
 	bool validCraftingType(int type);
 
@@ -77,6 +79,7 @@ public:
 	void copy(BaseDroidModuleComponent* other);
 };
 
+
 } // droid
 } // components
 } // tangible
@@ -84,5 +87,4 @@ public:
 } // zone
 } // server
 using namespace server::zone::objects::tangible::components::droid;
-
 #endif /* DROIDCRAFTINGMODULEDATACOMPONENT_H_ */

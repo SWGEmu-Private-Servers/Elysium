@@ -5,8 +5,12 @@
 #ifndef VOLLEYFIRECOMMAND_H_
 #define VOLLEYFIRECOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "SquadLeaderCommand.h"
 #include "server/zone/managers/skill/SkillModManager.h"
+#include "server/zone/managers/combat/CombatManager.h"
+#include "CombatQueueCommand.h"
+#include "server/zone/objects/player/events/setNormalTask.h"
 
 class VolleyFireCommand : public SquadLeaderCommand {
 public:
@@ -51,14 +55,14 @@ public:
 	}
 
 	bool attemptVolleyFire(CreatureObject* player, uint64* target, int skillMod) const {
-		if (player == nullptr)
+		if (player == NULL)
 			return false;
 
 		ManagedReference<WeaponObject*> weapon = player->getWeapon();
 
 		String skillCRC;
 
-		if (weapon != nullptr) {
+		if (weapon != NULL) {
 			if (!weapon->getCreatureAccuracyModifiers()->isEmpty()) {
 				skillCRC = weapon->getCreatureAccuracyModifiers()->get(0);
 
@@ -75,7 +79,7 @@ public:
 	}
 
 	bool doVolleyFire(CreatureObject* leader, GroupObject* group, uint64* target) const {
-		if (leader == nullptr || group == nullptr)
+		if (leader == NULL || group == NULL)
 			return false;
 
 		for (int i = 0; i < group->getGroupSize(); i++) {
@@ -96,6 +100,7 @@ public:
 			uint64 queueActionCRC = queueAction.hashCode();
 
 			member->executeObjectControllerAction(queueActionCRC, (uint64)target, "");
+			member->playEffect("clienteffect/off_superior_firepower.cef", "");
 
 			checkForTef(leader, member);
 		}

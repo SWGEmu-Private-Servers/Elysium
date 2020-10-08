@@ -17,14 +17,14 @@ public:
 
 
 	int doQueueCommand(CreatureObject* creature, const uint64& target, const UnicodeString& arguments) const {
-		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().get().castTo<PetControlDevice*>();
+		ManagedReference<PetControlDevice*> controlDevice = creature->getControlDevice().castTo<PetControlDevice*>();
 
-		if (controlDevice == nullptr)
+		if (controlDevice == NULL)
 			return GENERALERROR;
 
 		ManagedReference<AiAgent*> pet = cast<AiAgent*>(creature);
 
-		if (pet == nullptr)
+		if (pet == NULL)
 			return GENERALERROR;
 
 		if (pet->hasRidingCreature())
@@ -34,7 +34,7 @@ public:
 			pet->setPosture(CreaturePosture::UPRIGHT);
 
 		ManagedReference<SceneObject*> targetObject = server->getZoneServer()->getObject(target, true);
-		if (targetObject == nullptr || !targetObject->isCreatureObject() ) { // pets should be able to follow other mobiles as a command. i found multiple references to this. -- washu
+		if (targetObject == NULL || !targetObject->isCreatureObject() ) { // pets should be able to follow other mobiles as a command. i found multiple references to this. -- washu
 			pet->showFlyText("npc_reaction/flytext","confused", 204, 0, 0);  // "?!!?!?!"
 			return GENERALERROR;
 		}
@@ -48,12 +48,12 @@ public:
 
 		ManagedReference<CreatureObject*> player = server->getZoneServer()->getObject(playerID, true).castTo<CreatureObject*>();
 
-		if (player == nullptr)
+		if (player == NULL)
 			return GENERALERROR;
 
 		CreatureObject* targetCreature = cast<CreatureObject*>(targetObject.get());
 
-		if (targetCreature == nullptr)
+		if (targetCreature == NULL)
 			return GENERALERROR;
 
 		if (targetCreature != player && targetCreature->isAttackableBy(creature) && !CollisionManager::checkLineOfSight(player, targetObject)) {
@@ -61,10 +61,10 @@ public:
 			return INVALIDTARGET;
 		}
 
-		Reference<CellObject*> targetCell = targetObject->getParent().get().castTo<CellObject*>();
+		Reference<CellObject*> targetCell = targetObject->getParent().castTo<CellObject*>();
 
-		if (targetCell != nullptr) {
-			auto perms = targetCell->getContainerPermissions();
+		if (targetCell != NULL) {
+			ContainerPermissions* perms = targetCell->getContainerPermissions();
 
 			if (!perms->hasInheritPermissionsFromParent()) {
 				if (!targetCell->checkContainerPermission(player, ContainerPermissions::WALKIN)) {
@@ -77,7 +77,7 @@ public:
 		// Check if droid has power
 		if( controlDevice->getPetType() == PetManager::DROIDPET ){
 			ManagedReference<DroidObject*> droidPet = cast<DroidObject*>(pet.get());
-			if( droidPet == nullptr )
+			if( droidPet == NULL )
 				return GENERALERROR;
 
 			if( !droidPet->hasPower() ){

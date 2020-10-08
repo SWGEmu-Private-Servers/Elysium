@@ -5,6 +5,7 @@
 #ifndef CHANNELFORCECOMMAND_H_
 #define CHANNELFORCECOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/objects/creature/buffs/ChannelForceBuff.h"
 #include "templates/params/creature/CreatureAttribute.h"
 
@@ -31,12 +32,13 @@ public:
 			return NOJEDIARMOR;
 		}
 
-		// Bonus is in between 250-350.
-		int forceRandom = System::random(100);
-		int forceBonus = 250 + (forceRandom);
+		// Bonus is in between 200-300.
+		int rand = System::random(10);
+		int forceBonus = 25;
 
 		ManagedReference<PlayerObject*> playerObject = creature->getPlayerObject();
-		if (playerObject == nullptr)
+
+		if (playerObject == NULL)
 			return GENERALERROR;
 
 		// Do not execute if the player's force bar is full.
@@ -68,18 +70,21 @@ public:
 		// Give Force, and subtract HAM.
 		playerObject->setForcePower(playerObject->getForcePower() + forceBonus);
 
+		creature->playEffect("clienteffect/pl_force_channel_self.cef");
+
 		// Setup buffs.
 		uint32 buffCRC = STRING_HASHCODE("channelforcebuff");
 		Reference<Buff*> buff = creature->getBuff(buffCRC);
-		int duration = ChannelForceBuff::FORCE_CHANNEL_DURATION_SECONDS;
-		if (buff == nullptr) {
+		int duration = ChannelForceBuff::FORCE_CHANNEL_TICK_SECONDS * 20;
+		if (buff == NULL) {
 			buff = new ChannelForceBuff(creature, buffCRC, duration);
 			
 			Locker locker(buff);
 			
 			buff->setAttributeModifier(CreatureAttribute::HEALTH, -forceBonus);
-			buff->setAttributeModifier(CreatureAttribute::ACTION, -forceBonus);
-			buff->setAttributeModifier(CreatureAttribute::MIND, -forceBonus);
+
+		/*	buff->setAttributeModifier(CreatureAttribute::ACTION, -forceBonus);
+			buff->setAttributeModifier(CreatureAttribute::MIND, -forceBonus); */
 
 			creature->addBuff(buff);
 		} else {
@@ -87,18 +92,19 @@ public:
 
 			buff->setAttributeModifier(CreatureAttribute::HEALTH,
 									   buff->getAttributeModifierValue(CreatureAttribute::HEALTH)-forceBonus);
-			buff->setAttributeModifier(CreatureAttribute::ACTION,
+
+			/*buff->setAttributeModifier(CreatureAttribute::ACTION,
 									   buff->getAttributeModifierValue(CreatureAttribute::ACTION)-forceBonus);
 			buff->setAttributeModifier(CreatureAttribute::MIND,
-									   buff->getAttributeModifierValue(CreatureAttribute::MIND)-forceBonus);
+									   buff->getAttributeModifierValue(CreatureAttribute::MIND)-forceBonus); */
 			
 			creature->addMaxHAM(CreatureAttribute::HEALTH, -forceBonus);
-			creature->addMaxHAM(CreatureAttribute::ACTION, -forceBonus);
-			creature->addMaxHAM(CreatureAttribute::MIND, -forceBonus);
+		/*	creature->addMaxHAM(CreatureAttribute::ACTION, -forceBonus);
+			creature->addMaxHAM(CreatureAttribute::MIND, -forceBonus); */
 			
-			creature->renewBuff(buffCRC, duration);
+			creature->renewBuff(buffCRC, duration + buff->getTimeLeft());
 			Reference<ChannelForceBuff*> channelBuff = buff.castTo<ChannelForceBuff*>();
-			if (channelBuff != nullptr)
+			if (channelBuff != NULL)
 				channelBuff->activateRegenTick();
 		}
 
@@ -106,7 +112,7 @@ public:
 	}
 
 	float getCommandDuration(CreatureObject* object, const UnicodeString& arguments) const {
-		return defaultTime * 3.0;
+		return defaultTime * 1.0;
 	}
 
 };

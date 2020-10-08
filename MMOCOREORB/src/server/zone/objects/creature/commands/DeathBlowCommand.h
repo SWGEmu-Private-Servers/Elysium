@@ -31,7 +31,7 @@ public:
 
 		ManagedReference<SceneObject*> targetObject = server->getZoneServer()->getObject(target);
 
-		if (creature == targetObject || targetObject == nullptr)
+		if (creature == targetObject || targetObject == NULL)
 			return GENERALERROR;
 
 		//TODO: play coup_de_grace combat animations - ranged_coup_de_grace, melee_coup_de_grace, unarmed_coup_de_grace
@@ -42,18 +42,35 @@ public:
 			Locker clocker(player, creature);
 
 			if (!CollisionManager::checkLineOfSight(creature, player)) {
-				creature->sendSystemMessage("@combat_effects:cansee_fail");// You cannot see your target.
+				creature->sendSystemMessage("@container_error_message:container18");
 				return GENERALERROR;
 			}
 
 			if (!player->isIncapacitated() || player->isFeigningDeath()){
-				creature->sendSystemMessage("@error_message:target_not_incapacitated"); //You cannot perform the death blow. Your target is not incapacitated.
+				creature->sendSystemMessage("@error_message:target_not_incapacitated");
 				return GENERALERROR;
 			}
 
-			if (player->isAttackableBy(creature) && checkDistance(player, creature, 5)) {
+			if (player->isAttackableBy(creature) && checkDistance(player, creature, 10) && player->getFaction() == Factions::FACTIONREBEL) {
 				PlayerManager* playerManager = server->getPlayerManager();
 
+				creature->playEffect("clienteffect/holoemote_imperial.cef", "head");
+				creature->playMusicMessage("sound/music_themequest_victory_imperial.snd");
+				playerManager->killPlayer(creature, player, 1);
+			}
+
+			if (player->isAttackableBy(creature) && checkDistance(player, creature, 10) && player->getFaction() == Factions::FACTIONIMPERIAL) {
+				PlayerManager* playerManager = server->getPlayerManager();
+
+				creature->playEffect("clienteffect/holoemote_rebel.cef", "head");
+				creature->playMusicMessage("sound/music_themequest_victory_rebel.snd");
+				playerManager->killPlayer(creature, player, 1);
+			}
+			if (player->isAttackableBy(creature) && checkDistance(player, creature, 10) && player->getFaction() == Factions::FACTIONNEUTRAL) {
+				PlayerManager* playerManager = server->getPlayerManager();
+
+				creature->playEffect("clienteffect/holoemote_haunted.cef", "head");
+				creature->playMusicMessage("sound/music_combat_bfield_def.snd");
 				playerManager->killPlayer(creature, player, 1);
 			}
 		} else if (targetObject->isPet()) {
@@ -62,12 +79,12 @@ public:
 			Locker clocker(pet, creature);
 
 			if (!CollisionManager::checkLineOfSight(creature, pet)) {
-				creature->sendSystemMessage("@combat_effects:cansee_fail");// You cannot see your target.
+				creature->sendSystemMessage("@container_error_message:container18");
 				return GENERALERROR;
 			}
 
 			if (!pet->isIncapacitated()){
-				creature->sendSystemMessage("@error_message:target_not_incapacitated"); //You cannot perform the death blow. Your target is not incapacitated.
+				creature->sendSystemMessage("@error_message:target_not_incapacitated");
 				return GENERALERROR;
 			}
 
@@ -79,10 +96,6 @@ public:
 		} else {
 			return GENERALERROR;
 		}
-
-		StringIdChatParameter params("base_player", "prose_target_dead"); // %TT is no more.
-		params.setTT(targetObject->getDisplayedName());
-		creature->sendSystemMessage(params);
 
 		return SUCCESS;
 	}

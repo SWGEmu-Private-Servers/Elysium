@@ -5,7 +5,8 @@
 #ifndef CHATONGETIGNORELIST_H_
 #define CHATONGETIGNORELIST_H_
 
-#include "engine/service/proto/BaseMessage.h"
+#include "engine/engine.h"
+
 #include "server/zone/objects/player/PlayerObject.h"
 
 class ChatOnGetIgnoreList : public BaseMessage {
@@ -16,7 +17,7 @@ public:
 
 		insertLong(ghost->getParentID());
 
-		const DeltaVector<String>* ignoreList = ghost->getIgnoreList();
+		DeltaVector<String>* ignoreList = ghost->getIgnoreList();
 		insertInt(ignoreList->size());
 
 		for (int i = 0; i < ignoreList->size(); ++i) {

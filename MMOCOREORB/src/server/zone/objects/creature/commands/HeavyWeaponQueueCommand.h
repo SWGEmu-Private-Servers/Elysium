@@ -11,9 +11,16 @@
 #include"server/zone/ZoneServer.h"
 #include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/managers/combat/CombatManager.h"
+#include "server/zone/managers/player/PlayerManager.h"
 #include "server/zone/managers/combat/CreatureAttackData.h"
 #include "server/zone/managers/collision/CollisionManager.h"
+#include "templates/params/creature/CreatureAttribute.h"
+#include "templates/params/creature/CreatureState.h"
+#include "server/zone/objects/creature/commands/effect/StateEffect.h"
+#include "server/zone/objects/creature/commands/effect/DotEffect.h"
+#include "server/zone/objects/creature/commands/effect/CommandEffect.h"
 #include "CombatQueueCommand.h"
+#include "server/zone/managers/collision/PathFinderManager.h"
 
 class HeavyWeaponQueueCommand : public CombatQueueCommand {
 public:
@@ -22,8 +29,9 @@ public:
 
 	int doCombatAction(CreatureObject* creature, const uint64& target, const UnicodeString& arguments = "") const {
 			ManagedReference<SceneObject*> targetObject = server->getZoneServer()->getObject(target);
+			PlayerManager* playerManager = server->getPlayerManager();
 
-			if (targetObject == nullptr || !targetObject->isTangibleObject() || targetObject == creature)
+			if (targetObject == NULL || !targetObject->isTangibleObject() || targetObject == creature)
 				return INVALIDTARGET;
 
 			if (creature->isProne())
@@ -33,7 +41,7 @@ public:
 				return TOOFAR;
 
 			if (!CollisionManager::checkLineOfSight(creature, targetObject)) {
-				creature->sendSystemMessage("@cbt_spam:los_fail"); // You lost sight of your target.
+				creature->sendSystemMessage("@container_error_message:container18");
 				return GENERALERROR;
 			}
 

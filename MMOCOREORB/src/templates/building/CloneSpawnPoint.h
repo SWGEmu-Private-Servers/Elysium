@@ -8,8 +8,7 @@
 #ifndef CLONESPAWNPOINT_H_
 #define CLONESPAWNPOINT_H_
 
-#include "engine/util/u3d/Coordinate.h"
-#include "engine/util/u3d/Quaternion.h"
+#include "engine/engine.h"
 
 class CloneSpawnPoint : public Object {
 	Coordinate coordinate;
@@ -62,5 +61,7 @@ public:
 		return cellid;
 	}
 };
+
+
 
 #endif /* CLONESPAWNPOINT_H_ */

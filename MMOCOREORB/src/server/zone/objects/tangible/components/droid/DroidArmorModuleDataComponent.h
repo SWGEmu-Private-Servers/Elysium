@@ -6,6 +6,7 @@
 #define DROIDARMORMODULEDATACOMPONENT_H_
 
 #include "BaseDroidModuleComponent.h"
+#include "engine/core/ManagedReference.h"
 
 namespace server {
 namespace zone {
@@ -13,6 +14,7 @@ namespace objects {
 namespace tangible {
 namespace components {
 namespace droid {
+
 
 class DroidArmorModuleDataComponent : public BaseDroidModuleComponent {
 
@@ -24,7 +26,7 @@ public:
 
 	~DroidArmorModuleDataComponent();
 
-	String getModuleName() const;
+	String getModuleName();
 
 	void initializeTransientMembers();
 
@@ -34,9 +36,9 @@ public:
 
 	int getBatteryDrain();
 
-	String toString() const;
+	String toString();
 
-    	bool isStackable() { return true; }
+    bool isStackable() { return true; }
 
 	void updateCraftingValues(CraftingValues* values, bool firstUpdate);
 
@@ -45,6 +47,7 @@ public:
 	void copy(BaseDroidModuleComponent* other);
 };
 
+
 } // droid
 } // components
 } // tangible
@@ -52,5 +55,4 @@ public:
 } // zone
 } // server
 using namespace server::zone::objects::tangible::components::droid;
-
 #endif /* DROIDARMORMODULEDATACOMPONENT_H_ */

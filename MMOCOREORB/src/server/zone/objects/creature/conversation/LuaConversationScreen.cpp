@@ -26,7 +26,6 @@ Luna<LuaConversationScreen>::RegType LuaConversationScreen::Register[] = {
 		{ "setDialogTextDF", &LuaConversationScreen::setDialogTextDF},
 		{ "setDialogTextDI", &LuaConversationScreen::setDialogTextDI},
 		{ "setCustomDialogText", &LuaConversationScreen::setCustomDialogText},
-		{ "setStopConversation", &LuaConversationScreen::setStopConversation},
 		{ 0, 0 }
 };
 
@@ -101,7 +100,7 @@ int LuaConversationScreen::getScreenID(lua_State* L) {
 
 	String text;
 
-	if (realObject != nullptr)
+	if (realObject != NULL)
 		text = realObject->getScreenID();
 
 	lua_pushstring(L, text.toCharArray());
@@ -155,13 +154,13 @@ void LuaConversationScreen::setDialogText(StringIdParameter* param, lua_State* L
 
 	} else {
 		const char* str1 = lua_tostring(L, -1);
-		const char* str2 = nullptr;
+		const char* str2 = NULL;
 
 		if (lua_gettop(L) > 1 && lua_isstring(L, -2)) {
 			str2 = lua_tostring(L, -2);
 		}
 
-		if (str2 != nullptr) {
+		if (str2 != NULL) {
 			param->set(str2, str1);
 		} else {
 			param->set(str1);
@@ -213,14 +212,6 @@ int LuaConversationScreen::setDialogTextDI(lua_State* L) {
 	int num = lua_tointeger(L, -1);
 
 	realObject->setDialogTextDI(num);
-
-	return 0;
-}
-
-int LuaConversationScreen::setStopConversation(lua_State* L) {
-	bool stop = lua_toboolean(L, -1);
-
-	realObject->setStopConversation(stop);
 
 	return 0;
 }

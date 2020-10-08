@@ -32,14 +32,14 @@ public:
 
 		String palette = cBox->getColorPalette();
 
-		ManagedReference<SceneObject*> armorRehue = cBox->getUsingObject().get();
+		ManagedReference<SceneObject*> armorRehue = cBox->getUsingObject();
 
-		if (armorRehue == nullptr)
+		if (armorRehue == NULL)
 			return;
 
 		ManagedReference<TangibleObject*> armorRehueTano = armorRehue->asTangibleObject();
 
-		if (armorRehueTano != nullptr) {
+		if (armorRehueTano != NULL) {
 			Locker locker(armorRehueTano, creature);
 
 			armorRehueTano->setCustomizationVariable(palette, index, true);

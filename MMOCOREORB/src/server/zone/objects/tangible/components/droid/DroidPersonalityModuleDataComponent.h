@@ -6,6 +6,7 @@
 #define DROIDPERSONALITYMODULEDATACOMPONENT_H_
 
 #include "BaseDroidModuleComponent.h"
+#include "engine/core/ManagedReference.h"
 #include "server/zone/objects/tangible/components/droid/DroidPersonalityObserver.h"
 
 namespace server {
@@ -30,7 +31,7 @@ public:
 
 	~DroidPersonalityModuleDataComponent();
 
-	String getModuleName() const;
+	String getModuleName();
 
 	void initializeTransientMembers();
 
@@ -44,7 +45,7 @@ public:
 
 	void deactivate();
 
-	String toString() const;
+	String toString();
 
 	void onCall();
 

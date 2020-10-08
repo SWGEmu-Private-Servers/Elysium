@@ -5,6 +5,7 @@
 #ifndef CREATUREPOSTURE_H_
 #define CREATUREPOSTURE_H_
 
+#include "engine/engine.h"
 #include "templates/datatables/DataTableIff.h"
 #include "templates/datatables/DataTableRow.h"
 #include "templates/manager/TemplateManager.h"
@@ -48,7 +49,7 @@ public:
 		return posture == entry.posture; // only need posture here because I am sure that these are unique to entries
 	}
 
-	bool toString(String& str) const {
+	bool toString(String& str) {
 		return posture.toString(str) && stationary.toString(str) && slow.toString(str) && fast.toString(str) && movementScale.toString(str) && accelerationScale.toString(str) && turnScale.toString(str) && canSeeHeightMod.toString(str);
 	}
 
@@ -85,7 +86,7 @@ public:
 
 class CreaturePosture : public Singleton<CreaturePosture>, public Object, public Logger {
 public:
-
+	
 	enum {
 		INVALID        = 0xFF,
 		UPRIGHT        = 0,
@@ -211,8 +212,8 @@ public:
 
 	~CreaturePosture() {}
 
-	uint8 getLocomotion(uint8 pos, uint8 speed) const {
-		const CreatureMovementEntry* move = &movementTable.get(pos);
+	uint8 getLocomotion(uint8 pos, uint8 speed) {
+		CreatureMovementEntry* move = &movementTable.get(pos);
 
 		switch (speed) {
 		case CreatureLocomotion::STATIONARY:
@@ -231,8 +232,8 @@ public:
 		return CreatureLocomotion::INVALID;
 	}
 
-	uint8 getSpeed(uint8 pos, uint8 loc) const {
-		const CreatureMovementEntry* move = &movementTable.get(pos);
+	uint8 getSpeed(uint8 pos, uint8 loc) {
+		CreatureMovementEntry* move = &movementTable.get(pos);
 
 		if (loc == move->stationary)
 			return CreatureLocomotion::STATIONARY;
@@ -246,32 +247,34 @@ public:
 		return CreatureLocomotion::INVALID;
 	}
 
-	float getMovementScale(uint8 pos) const {
+	float getMovementScale(uint8 pos) {
 		return movementTable.get(pos).movementScale;
 	}
 
-	float getAccelerationScale(uint8 pos) const {
+	float getAccelerationScale(uint8 pos) {
 		return movementTable.get(pos).accelerationScale;
 	}
 
-	float getTurnScale(uint8 pos) const {
+	float getTurnScale(uint8 pos) {
 		return movementTable.get(pos).turnScale;
 	}
 
-	float getCanSeeHeightMod(uint8 pos) const {
+	float getCanSeeHeightMod(uint8 pos) {
 		return movementTable.get(pos).canSeeHeightMod;
 	}
 
 	void loadMovementData() {
-		UniqueReference<IffStream*> iffStream(TemplateManager::instance()->openIffFile("datatables/movement/movement_human.iff"));
+		IffStream* iffStream = TemplateManager::instance()->openIffFile("datatables/movement/movement_human.iff");
 
-		if (iffStream == nullptr) {
+		if (iffStream == NULL) {
 			error("Could not load movement data.");
 			return;
 		}
 
 		DataTableIff dtiff;
 		dtiff.readObject(iffStream);
+
+		delete iffStream;
 
 		for (int i = 0; i < dtiff.getTotalRows(); i++) {
 			DataTableRow* row = dtiff.getRow(i);
@@ -308,19 +311,19 @@ public:
 		}
 	}
 
-	int getRangedAttackMod(uint8 loc) const {
+	int getRangedAttackMod(uint loc) {
 		return rangedAttackMod.get(loc);
 	}
 
-	int getRangedDefenseMod(uint8 loc) const {
+	int getRangedDefenseMod(uint loc) {
 		return rangedDefenseMod.get(loc);
 	}
 
-	int getMeleeAttackMod(uint8 loc) const {
+	int getMeleeAttackMod(uint loc) {
 		return meleeAttackMod.get(loc);
 	}
 
-	int getMeleeDefenseMod(uint8 loc) const {
+	int getMeleeDefenseMod(uint loc) {
 		return meleeDefenseMod.get(loc);
 	}
 };

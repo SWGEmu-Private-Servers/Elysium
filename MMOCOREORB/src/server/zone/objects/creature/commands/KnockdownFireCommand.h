@@ -5,6 +5,7 @@
 #ifndef KNOCKDOWNFIRECOMMAND_H_
 #define KNOCKDOWNFIRECOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "CombatQueueCommand.h"
 
 class KnockdownFireCommand : public CombatQueueCommand {
@@ -21,6 +22,10 @@ public:
 
 		if (!checkInvalidLocomotions(creature))
 			return INVALIDLOCOMOTION;
+
+		ManagedReference<WeaponObject*> weapon = creature->getWeapon();
+			if (!weapon->isFlameThrower())
+				return INVALIDWEAPON;
 
 		return doCombatAction(creature, target);
 	}

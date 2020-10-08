@@ -4,22 +4,21 @@
 
 package server.zone.managers.crafting;
 
+import system.util.VectorMap;
+
+import engine.lua.Lua;
+
 import server.zone.objects.player.PlayerObject;
 import server.zone.objects.creature.CreatureObject;
 import server.zone.objects.manufactureschematic.ManufactureSchematic;
 import server.zone.objects.draftschematic.DraftSchematic;
+import system.util.Vector;
 import server.zone.managers.ZoneManager;
-
-include system.util.Vector;
-include server.zone.managers.crafting.labratories.SharedLabratory;
-include server.zone.objects.tangible.TangibleObject;
+import server.zone.managers.crafting.labratories.SharedLabratory;
+import server.zone.objects.tangible.TangibleObject;
 include server.zone.managers.crafting.schematicmap.SchematicMap;
 include server.zone.objects.manufactureschematic.craftingvalues.CraftingValues;
-include system.util.HashTable;
-include system.util.VectorMap;
-include system.lang.ref.Reference;
 
-@dirty
 class CraftingManager extends ZoneManager {
 	private transient SchematicMap schematicMap;
 
@@ -43,6 +42,9 @@ class CraftingManager extends ZoneManager {
 	public static final short OK = 6;
 	public static final short BARELYSUCCESSFUL = 7;
 	public static final short CRITICALFAILURE = 8;
+
+	@dereferenced
+	private transient SortedVector<string> bioMods;
 	
 	@dereferenced
 	private transient HashTable<int, Reference<SharedLabratory> > labs;
@@ -53,9 +55,7 @@ class CraftingManager extends ZoneManager {
 	
 	@local
 	public native void initialize();
-
-	public native void stop();
-
+		
 	@local 
 	public native void awardSchematicGroup(PlayerObject playerObject, @dereferenced Vector<string> schematicgroups, boolean updateClient = false);
 	
@@ -81,9 +81,14 @@ class CraftingManager extends ZoneManager {
 	public native int calculateExperimentationSuccess(CreatureObject player, DraftSchematic draftSchematic, float effectiveness);
 	
 	public native string generateSerial();
+
+	private native boolean loadBioSkillMods();
+
+	public native string checkBioSkillMods(final string property);
 	
 	private native void configureLabratories();
 	
 	public native void setInitialCraftingValues(TangibleObject prototype, ManufactureSchematic manufactureSchematic, int assemblySuccess);
+	public native boolean allowManufactureSchematic(ManufactureSchematic manufactureSchematic);
 	public native int getCreationCount(ManufactureSchematic manufactureSchematic);
 }

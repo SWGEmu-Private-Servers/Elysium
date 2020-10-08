@@ -1,11 +1,12 @@
 #ifndef GENETICS_H_
 #define GENETICS_H_
 
+#include "SharedLabratory.h"
+#include "engine/engine.h"
 #include "server/zone/managers/creature/DnaManager.h"
 #include "server/zone/objects/tangible/component/dna/DnaComponent.h"
 #include "server/zone/objects/tangible/component/genetic/GeneticComponent.h"
 #include "templates/params/creature/CreatureFlag.h"
-
 namespace server {
 namespace zone {
 namespace managers {
@@ -323,9 +324,9 @@ public:
 		int eValue = ( effectiveness / (rating + 1));
 		if(input > 0) {
 			if (multiply) {
-				return Math::max((input - (rValue +eValue)),0) * multValue;
+				return MAX((input - (rValue +eValue)),0) * multValue;
 			} else {
-				return Math::max((input - (rValue +eValue)),0) / multValue;
+				return MAX((input - (rValue +eValue)),0) / multValue;
 			}
 		} else {
 			if (lowValue == 1) {
@@ -450,5 +451,4 @@ public:
 }
 
 using namespace server::zone::managers::crafting::labratories;
-
 #endif /* GENETICS_H_ */

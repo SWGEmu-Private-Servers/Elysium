@@ -1,12 +1,7 @@
 /*
  * 				Copyright <SWGEmu>
 		See file COPYING for copying conditions. */
-
 #include "BaseDroidModuleComponent.h"
-
-#include "server/zone/objects/creature/CreatureObject.h"
-#include "server/zone/objects/creature/ai/DroidObject.h"
-#include "server/zone/objects/intangible/PetControlDevice.h"
 
 BaseDroidModuleComponent::BaseDroidModuleComponent() {
 	setLoggingName("DroidModuleDataComponent");
@@ -18,7 +13,7 @@ BaseDroidModuleComponent::~BaseDroidModuleComponent() {
 
 }
 
-String BaseDroidModuleComponent::getModuleName() const {
+String BaseDroidModuleComponent::getModuleName() {
 	return String("base");
 }
 
@@ -70,7 +65,7 @@ bool BaseDroidModuleComponent::actsAsCraftingStation() {
 	return false;
 }
 
-String BaseDroidModuleComponent::toString() const {
+String BaseDroidModuleComponent::toString() {
 	StringBuffer str;
 	str << getModuleName() << "\n";
 	return str.toString();
@@ -84,14 +79,9 @@ void BaseDroidModuleComponent::onStore() {
 
 }
 
-Reference<DroidObject*> BaseDroidModuleComponent::getDroidObject() {
-	Reference<SceneObject*> droid = getParent();
-
-	if (droid == nullptr) {
-		return nullptr;
-	} else {
-		return droid->getParentRecursively(SceneObjectType::DROIDCREATURE).castTo<DroidObject*>();
-	}
+ManagedReference<DroidObject*> BaseDroidModuleComponent::getDroidObject() {
+	ManagedReference<DroidObject*> droid = getParent()->getParentRecursively(SceneObjectType::DROIDCREATURE).get().castTo<DroidObject*>();
+	return droid;
 }
 
 void BaseDroidModuleComponent::updateCraftingValues(CraftingValues* values, bool firstUpdate) {

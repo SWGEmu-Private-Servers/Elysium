@@ -8,7 +8,11 @@
 
 #include "server/zone/objects/mission/HuntingMissionObjective.h"
 
+#include "server/zone/objects/waypoint/WaypointObject.h"
 #include "server/zone/Zone.h"
+#include "server/zone/ZoneServer.h"
+#include "server/zone/managers/object/ObjectManager.h"
+#include "server/zone/managers/mission/MissionManager.h"
 #include "server/zone/managers/planet/PlanetManager.h"
 #include "terrain/manager/TerrainManager.h"
 #include "server/chat/StringIdChatParameter.h"
@@ -43,7 +47,7 @@ void HuntingMissionObjectiveImplementation::abort() {
 
 		ManagedReference<CreatureObject*> player = getPlayerOwner();
 
-		if (player != nullptr) {
+		if (player != NULL) {
 			Locker locker(player);
 
 			player->dropObserver(ObserverEventType::KILLEDCREATURE, observer);
@@ -60,30 +64,22 @@ void HuntingMissionObjectiveImplementation::complete() {
 
 int HuntingMissionObjectiveImplementation::notifyObserverEvent(MissionObserver* observer, uint32 eventType, Observable* observable, ManagedObject* arg1, int64 arg2) {
 	ManagedReference<MissionObject* > mission = this->mission.get();
-	if (mission == nullptr)
-		return 1;
-
-	ManagedReference<CreatureObject*> player = getPlayerOwner();
-
-	if (player == nullptr)
+	if (mission == NULL)
 		return 1;
 
 	if (eventType == ObserverEventType::KILLEDCREATURE) {
-		if (cast<CreatureObject*>(observable) != player)
+		if (cast<CreatureObject*>(observable) != getPlayerOwner().get())
 			return 0;
 
 		CreatureObject* creature = cast<CreatureObject*>(arg1);
 		AiAgent* agent = cast<AiAgent*>(creature);
 
-		if (agent == nullptr)
+		if (agent == NULL)
 			return 0;
 
-		if (!agent->isInRange(player, 128.0f))
-			return 0;
+		CreatureTemplate* creatureTemplate = agent->getCreatureTemplate();
 
-		const CreatureTemplate* creatureTemplate = agent->getCreatureTemplate();
-
-		if (creatureTemplate == nullptr)
+		if (creatureTemplate == NULL)
 			return 0;
 
 		String temp1 = mission->getTemplateString1();
@@ -101,7 +97,7 @@ int HuntingMissionObjectiveImplementation::notifyObserverEvent(MissionObserver* 
 			message.setDI(targetsKilled);
 			message.setTO(mission->getTargetName());
 
-			player->sendSystemMessage(message);
+			getPlayerOwner().get()->sendSystemMessage(message);
 		}
 	}
 
@@ -113,12 +109,12 @@ Vector3 HuntingMissionObjectiveImplementation::getEndPosition() {
 
 	Vector3 missionEndPoint;
 
-	if(mission == nullptr)
+	if(mission == NULL)
 		return missionEndPoint;
 
 	missionEndPoint.setX(mission->getStartPositionX());
 	missionEndPoint.setY(mission->getStartPositionY());
-	TerrainManager* terrain = getPlayerOwner()->getZone()->getPlanetManager()->getTerrainManager();
+	TerrainManager* terrain = getPlayerOwner().get()->getZone()->getPlanetManager()->getTerrainManager();
 	missionEndPoint.setZ(terrain->getHeight(missionEndPoint.getX(), missionEndPoint.getY()));
 
 	return missionEndPoint;

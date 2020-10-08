@@ -5,6 +5,8 @@
 #ifndef FORCERESISTBLEEDINGCOMMAND_H_
 #define FORCERESISTBLEEDINGCOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
+
 class ForceResistBleedingCommand : public JediQueueCommand {
 public:
 
@@ -13,7 +15,7 @@ public:
 
 		buffCRC = BuffCRC::JEDI_RESIST_BLEEDING;
 
-		skillMods.put("combat_bleeding_defense", 25);
+		skillMods.put("resistance_bleeding", 25);
 		skillMods.put("absorption_bleeding", 25);
 
 	}

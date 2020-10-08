@@ -7,9 +7,15 @@
 
 #include "server/zone/objects/installation/harvester/HarvesterObject.h"
 #include "server/zone/packets/harvester/HarvesterObjectMessage7.h"
+#include "server/zone/packets/installation/InstallationObjectDeltaMessage7.h"
+#include "server/zone/objects/resource/ResourceSpawn.h"
 #include "server/zone/objects/resource/ResourceContainer.h"
+#include "server/zone/Zone.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 #include "server/zone/packets/harvester/ResourceHarvesterActivatePageMessage.h"
+#include "server/zone/managers/resource/ResourceManager.h"
+#include "server/zone/objects/area/ActiveArea.h"
+#include "templates/tangible/SharedStructureObjectTemplate.h"
 
 void HarvesterObjectImplementation::fillObjectMenuResponse(ObjectMenuResponse* menuResponse, CreatureObject* player) {
 	if (!isOnAdminList(player))
@@ -21,7 +27,7 @@ void HarvesterObjectImplementation::fillObjectMenuResponse(ObjectMenuResponse* m
 }
 
 void HarvesterObjectImplementation::synchronizedUIListen(CreatureObject* player, int value) {
-	if (!player->isPlayerCreature() || !isOnAdminList(player) || getZone() == nullptr)
+	if (!player->isPlayerCreature() || !isOnAdminList(player) || getZone() == NULL)
 		return;
 
 	addOperator(player);
@@ -36,7 +42,7 @@ void HarvesterObjectImplementation::synchronizedUIListen(CreatureObject* player,
 	for (int i = 0; i < resourceHopper.size(); ++i) {
 		ResourceContainer* container = resourceHopper.get(i);
 
-		if (container != nullptr) {
+		if (container != NULL) {
 			container->sendTo(player, true);
 		}
 	}

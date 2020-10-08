@@ -8,6 +8,7 @@
 #ifndef STRUCTUREFOOTPRINT_H_
 #define STRUCTUREFOOTPRINT_H_
 
+#include "engine/engine.h"
 #include "templates/IffTemplate.h"
 
 class StructureFootprint : public IffTemplate {
@@ -92,40 +93,37 @@ public:
 		iffStream->closeForm('FOOT');
 	}
 
-	String toString() const {
+	String toString() {
 		StringBuffer str;
 		str << "{rowSize=" << rowSize << ";colSize=" << colSize << ";centerX=" << centerX << ";centerY=" << centerY << ";rowChunkSize=" << rowChunkSize << ";colChunkSize=" << colChunkSize << "}";
 
 		return str.toString();
 	}
 
-	String toStringData() const {
-		return toString();
-	}
-
-	inline float getRowSize() const {
+	inline float getRowSize() {
 		return rowSize;
 	}
 
-	inline float getColSize() const {
+	inline float getColSize() {
 		return colSize;
 	}
 
-	inline float getCenterX() const {
+	inline float getCenterX() {
 		return centerX;
 	}
 
-	inline float getCenterY() const {
+	inline float getCenterY() {
 		return centerY;
 	}
 
-	inline float getRowChunkSize() const {
+	inline float getRowChunkSize() {
 		return rowChunkSize;
 	}
 
-	inline float getColChunkSize() const {
+	inline float getColChunkSize() {
 		return colChunkSize;
 	}
 };
+
 
 #endif /* STRUCTUREFOOTPRINT_H_ */

@@ -1,36 +1,32 @@
 #ifndef BASESHUTDOWNTASK_H_
 #define BASESHUTDOWNTASK_H_
 
+#include "engine/engine.h"
 #include "server/zone/managers/gcw/GCWManager.h"
 #include "server/zone/objects/player/sui/messagebox/SuiMessageBox.h"
 #include "server/zone/objects/player/sui/callbacks/BaseShutdownSuiCallback.h"
 
 class BaseShutdownTask : public Task {
-	ManagedWeakReference<BuildingObject*> building;
-	ManagedWeakReference<GCWManager*> gcwMan;
-	ManagedWeakReference<CreatureObject*> play;
-	ManagedWeakReference<SceneObject*> terminal;
+	ManagedReference<BuildingObject*> buildingObject;
+	ManagedReference<GCWManager*> gcwManager;
+	ManagedReference<CreatureObject*> player;
+	ManagedReference<SceneObject*> hqTerminal;
 
 public:
-	BaseShutdownTask(GCWManager* gcwManager, BuildingObject* buildingObject, CreatureObject* creature, SceneObject* term) {
-		gcwMan = gcwManager;
-		building = buildingObject;
-		terminal = term;
-		play = creature;
+	BaseShutdownTask(GCWManager* gcwMan, BuildingObject* building, CreatureObject* creature, SceneObject* term) {
+		gcwManager = gcwMan;
+		buildingObject = building;
+		hqTerminal = term;
+		player = creature;
 	}
 
 	void run() {
-		ManagedReference<BuildingObject*> buildingObject = building.get();
-		ManagedReference<GCWManager*> gcwManager = gcwMan.get();
-		ManagedReference<CreatureObject*> player = play.get();
-		ManagedReference<SceneObject*> hqTerminal = terminal.get();
-
-		if (gcwManager == nullptr || buildingObject == nullptr || hqTerminal == nullptr || player == nullptr)
+		if (gcwManager == NULL || buildingObject == NULL || hqTerminal == NULL || player == NULL)
 			return;
 
 		ManagedReference<PlayerObject* > ghost = player->getPlayerObject();
 
-		if (ghost == nullptr)
+		if (ghost == NULL)
 			return;
 
 		Locker locker(player);
@@ -51,7 +47,7 @@ public:
 		if (ghost->hasSuiBoxWindowType(SuiWindowType::HQ_TERMINAL))
 			ghost->closeSuiWindowType(SuiWindowType::HQ_TERMINAL);
 
-		Observer* shutdownObserver = nullptr;
+		Observer* shutdownObserver = NULL;
 		SortedVector<ManagedReference<Observer* > > observers = player->getObservers(ObserverEventType::PARENTCHANGED);
 
 		for (int i = 0; i < observers.size(); i++) {
@@ -63,7 +59,7 @@ public:
 			}
 		}
 
-		if (shutdownObserver != nullptr) {
+		if (shutdownObserver != NULL) {
 			player->dropObserver(ObserverEventType::PARENTCHANGED, shutdownObserver);
 			player->dropObserver(ObserverEventType::OBJECTDESTRUCTION, shutdownObserver);
 		}

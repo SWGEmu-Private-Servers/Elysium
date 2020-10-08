@@ -1,10 +1,13 @@
 #include "server/zone/objects/creature/buffs/ChannelForceBuff.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/creature/buffs/ChannelForceBuffTickEvent.h"
+#include "server/zone/managers/player/PlayerManager.h"
+#include "server/zone/ZoneServer.h"
+#include "templates/params/creature/CreatureAttribute.h"
 
 void ChannelForceBuffImplementation::initializeTransientMembers() {
 	BuffImplementation::initializeTransientMembers();
-	cfBuffEvent = nullptr;
+	cfBuffEvent = NULL;
 }
 
 void ChannelForceBuffImplementation::activate(bool applyModifiers) {
@@ -15,26 +18,23 @@ void ChannelForceBuffImplementation::activate(bool applyModifiers) {
 void ChannelForceBuffImplementation::deactivate(bool removeModifiers) {
 	BuffImplementation::deactivate(removeModifiers);
 
-	if (cfBuffEvent != nullptr) {
+	if (cfBuffEvent != NULL) {
 		cfBuffEvent->cancel();
-		cfBuffEvent = nullptr;
+		cfBuffEvent = NULL;
 	}
 }
 
 void ChannelForceBuffImplementation::activateRegenTick() {
-	if (cfBuffEvent == nullptr)
+	if (cfBuffEvent == NULL)
 		cfBuffEvent = new ChannelForceBuffTickEvent(_this.getReferenceUnsafeStaticCast());
 
-	auto delay = FORCE_CHANNEL_TICK_DELAY_SECONDS * 1000;
 	if (!cfBuffEvent->isScheduled())
-		cfBuffEvent->schedule(delay);
-	else
-		cfBuffEvent->reschedule(delay);
+		cfBuffEvent->schedule(FORCE_CHANNEL_TICK_SECONDS * 1000);
 }
 
 void ChannelForceBuffImplementation::doHamTick() {
   	ManagedReference<CreatureObject*> creo = creature.get();
-	if (creo == nullptr)
+	if (creo == NULL)
 		return;
 
 	float timeLeft = getTimeLeft();

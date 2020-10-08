@@ -7,8 +7,8 @@
 
 #include "TangibleObjectMenuComponent.h"
 #include "server/zone/objects/player/sessions/SlicingSession.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
-#include "server/zone/objects/player/PlayerObject.h"
 
 void TangibleObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject, ObjectMenuResponse* menuResponse, CreatureObject* player) const {
 	ObjectMenuComponent::fillObjectMenuResponse(sceneObject, menuResponse, player);
@@ -26,31 +26,31 @@ void TangibleObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObjec
 		bool hasSkill = true;
 		ManagedReference<SceneObject*> inventory = player->getSlottedObject("inventory");
 
-		if ((gameObjectType == SceneObjectType::PLAYERLOOTCRATE) && !player->hasSkill("combat_smuggler_novice"))
+		if ((gameObjectType == SceneObjectType::PLAYERLOOTCRATE) && !player->hasSkill("secondary_scoundrel_novice"))
 			hasSkill = false;
 		else if (sceneObject->isContainerObject())
 			hasSkill = false; // Let the container handle our slice menu
-		else if (sceneObject->isMissionTerminal() && !player->hasSkill("combat_smuggler_slicing_01"))
+		else if (sceneObject->isMissionTerminal() && !player->hasSkill("secondary_scoundrel_novice"))
 			hasSkill = false;
-		else if (sceneObject->isWeaponObject() && (!inventory->hasObjectInContainer(sceneObject->getObjectID()) || !player->hasSkill("combat_smuggler_slicing_02")))
+		else if (sceneObject->isWeaponObject() && (!inventory->hasObjectInContainer(sceneObject->getObjectID()) || !player->hasSkill("secondary_scoundrel_novice")))
 			hasSkill = false;
-		else if (sceneObject->isArmorObject() && (!inventory->hasObjectInContainer(sceneObject->getObjectID()) || !player->hasSkill("combat_smuggler_slicing_03")))
+		else if (sceneObject->isArmorObject() && (!inventory->hasObjectInContainer(sceneObject->getObjectID()) || !player->hasSkill("secondary_scoundrel_novice")))
 			hasSkill = false;
 
 		if(hasSkill)
 			menuResponse->addRadialMenuItem(69, 3, "@slicing/slicing:slice"); // Slice
 	}
 
-	if(player->getPlayerObject() != nullptr && player->getPlayerObject()->isPrivileged()) {
+	if(player->getPlayerObject() != NULL && player->getPlayerObject()->isPrivileged()) {
 		/// Viewing components used to craft item, for admins
 		ManagedReference<SceneObject*> container = tano->getSlottedObject("crafted_components");
-		if(container != nullptr) {
+		if(container != NULL) {
 
 			if(container->getContainerObjectsSize() > 0) {
 
 				SceneObject* satchel = container->getContainerObject(0);
 
-				if(satchel != nullptr && satchel->getContainerObjectsSize() > 0) {
+				if(satchel != NULL && satchel->getContainerObjectsSize() > 0) {
 					menuResponse->addRadialMenuItem(79, 3, "@ui_radial:ship_manage_components"); // View Components
 				}
 			}
@@ -58,7 +58,7 @@ void TangibleObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObjec
 	}
 
 	ManagedReference<SceneObject*> parent = tano->getParent().get();
-	if (parent != nullptr && parent->getGameObjectType() == SceneObjectType::STATICLOOTCONTAINER) {
+	if (parent != NULL && parent->getGameObjectType() == SceneObjectType::STATICLOOTCONTAINER) {
 		menuResponse->addRadialMenuItem(10, 3, "@ui_radial:item_pickup"); //Pick up
 	}
 }
@@ -70,7 +70,7 @@ int TangibleObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject
 	TangibleObject* tano = cast<TangibleObject*>( sceneObject);
 
 
-	if (selectedID == 69 && player->hasSkill("combat_smuggler_novice") ) { // Slice [PlayerLootCrate]
+	if (selectedID == 69 && player->hasSkill("secondary_scoundrel_novice") ) { // Slice [PlayerLootCrate]
 		if (player->containsActiveSession(SessionFacadeType::SLICING)) {
 			player->sendSystemMessage("@slicing/slicing:already_slicing");
 			return 0;
@@ -82,16 +82,16 @@ int TangibleObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject
 
 		return 0;
 	} else if (selectedID == 79) { // See components (admin)
-		if(player->getPlayerObject() != nullptr && player->getPlayerObject()->isPrivileged()) {
+		if(player->getPlayerObject() != NULL && player->getPlayerObject()->isPrivileged()) {
 
 			SceneObject* container = tano->getSlottedObject("crafted_components");
-			if(container != nullptr) {
+			if(container != NULL) {
 
 				if(container->getContainerObjectsSize() > 0) {
 
 					SceneObject* satchel = container->getContainerObject(0);
 
-					if(satchel != nullptr) {
+					if(satchel != NULL) {
 
 						satchel->sendWithoutContainerObjectsTo(player);
 						satchel->openContainerTo(player);

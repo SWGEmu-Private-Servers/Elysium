@@ -21,7 +21,7 @@ protected:
 
 	SocketDestinations socketDestinations;*/
 
-	Reference<const StructureFootprint*> structureFootprint;
+	Reference<StructureFootprint*> structureFootprint;
 
 	BoolParam targetable;
 
@@ -38,14 +38,13 @@ protected:
 
 	int useCount;
 
+	int factoryCrateSize;
+
 	bool sliceable;
 
 	bool invisible;
 
 	unsigned int faction;
-
-	int junkDealerNeeded;
-	int junkValue;
 
 	VectorMap<String, int> skillMods;
 
@@ -68,8 +67,8 @@ public:
 
 	~SharedTangibleObjectTemplate();
 
-	void readObject(LuaObject* templateData) override;
-	void readObject(IffStream* iffStream) override;
+	void readObject(LuaObject* templateData);
+	void readObject(IffStream* iffStream);
 
 	void parseFileData(IffStream* str);
 
@@ -100,7 +99,7 @@ public:
 		this->pvpStatusBitmask = pvpStatusBitmask;
 	}
 
-	inline const Vector<String>& getCertificationsRequired() const {
+	inline Vector<String> getCertificationsRequired() const {
 		return certificationsRequired;
 	}
 
@@ -108,7 +107,7 @@ public:
 		return level;
 	}
 
-	inline bool isInvisible() const {
+	inline bool isInvisible() {
 		return invisible;
 	}
 
@@ -116,23 +115,19 @@ public:
 		return useCount;
 	}
 
-	inline uint16 getPlayerUseMask() const {
+	inline int getFactoryCrateSize() const {
+		return factoryCrateSize;
+	}
+
+    inline uint16 getPlayerUseMask() const {
 		return playerUseMask;
 	}
 
-	inline unsigned int getFaction() const {
-		return faction;
-	}
+    inline unsigned int getFaction() const {
+    	return faction;
+    }
 
-	inline int getJunkDealerNeeded() const {
-		return junkDealerNeeded;
-	}
-
-	inline int getJunkValue() const {
-		return junkValue;
-	}
-
-	inline const StructureFootprint* getStructureFootprint() const {
+	inline StructureFootprint* getStructureFootprint() const {
 		return structureFootprint;
 	}
 
@@ -156,57 +151,57 @@ public:
 		return sliceable;
 	}
 
-	const Vector<short >* getNumberExperimentalProperties() const {
-		return numberExperimentalProperties;
-	}
+    Vector<short >* getNumberExperimentalProperties() {
+        return numberExperimentalProperties;
+    }
 
-	const Vector<String>* getExperimentalProperties() const {
-		return experimentalProperties;
-	}
+    Vector<String>* getExperimentalProperties() {
+        return experimentalProperties;
+    }
 
-	const Vector<short >* getExperimentalWeights() const {
-		return experimentalWeights;
-	}
+    Vector<short >* getExperimentalWeights() {
+        return experimentalWeights;
+    }
 
-	const Vector<String>* getExperimentalGroupTitles() const {
-		return experimentalGroupTitles;
-	}
+    Vector<String>* getExperimentalGroupTitles() {
+        return experimentalGroupTitles;
+    }
 
-	const Vector<String>* getExperimentalSubGroupTitles() const {
-		return experimentalSubGroupTitles;
-	}
+    Vector<String>* getExperimentalSubGroupTitles() {
+        return experimentalSubGroupTitles;
+    }
 
-	const Vector<float>* getExperimentalMin() const {
-		return experimentalMin;
-	}
+    Vector<float>* getExperimentalMin() {
+        return experimentalMin;
+    }
 
-	const Vector<float>* getExperimentalMax() const {
-		return experimentalMax;
-	}
+    Vector<float>* getExperimentalMax() {
+        return experimentalMax;
+    }
 
-	const Vector<short >* getExperimentalPrecision() const {
-		return experimentalPrecision;
-	}
+    Vector<short >* getExperimentalPrecision() {
+        return experimentalPrecision;
+    }
 
-	const Vector<uint32>* getPlayerRaces() const {
-		return playerRaces;
-	}
+    Vector<uint32>* getPlayerRaces() {
+    	return playerRaces;
+    }
 
-	const Vector<Reference<ResourceWeight* > >* getResourceWeights() const {
-		return resourceWeights;
-	}
+    Vector<Reference<ResourceWeight* > >* getResourceWeights() {
+    	return resourceWeights;
+    }
 
-	const VectorMap<String, int>* getSkillMods() const {
-		return &skillMods;
-	}
+    VectorMap<String, int>* getSkillMods() {
+    	return &skillMods;
+    }
 
-	int getSkillMod(const String& mod) const {
-		return skillMods.get(mod);
-	}
+    int getSkillMod(const String& mod) {
+    	return skillMods.get(mod);
+    }
 
-	bool isSharedTangibleObjectTemplate() const override {
-		return true;
-	}
+    bool isSharedTangibleObjectTemplate() {
+    	return true;
+    }
 };
 
 

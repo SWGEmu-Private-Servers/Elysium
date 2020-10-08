@@ -6,10 +6,13 @@
  */
 
 #include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/objects/player/PlayerObject.h"
 #include "SkillBuffObjectMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 #include "server/zone/objects/creature/buffs/Buff.h"
 #include "templates/tangible/SkillBuffTemplate.h"
+#include "server/zone/managers/objectcontroller/ObjectController.h"
 
 void SkillBuffObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject, ObjectMenuResponse* menuResponse, CreatureObject* player) const {
 
@@ -17,7 +20,7 @@ void SkillBuffObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObje
 		return;
 
 	TangibleObject* tano = cast<TangibleObject*>(sceneObject);
-	if(tano == nullptr)
+	if(tano == NULL)
 		return;
 
 	TangibleObjectMenuComponent::fillObjectMenuResponse(sceneObject, menuResponse, player);
@@ -41,8 +44,8 @@ int SkillBuffObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObjec
 
 	ManagedReference<TangibleObject*> tano = cast<TangibleObject*>(sceneObject);
 
-	Reference<SkillBuffTemplate*> skillBuff = cast<SkillBuffTemplate*>(sceneObject->getObjectTemplate());
-	if (skillBuff == nullptr) {
+	ManagedReference<SkillBuffTemplate*> skillBuff = cast<SkillBuffTemplate*>(sceneObject->getObjectTemplate());
+	if (skillBuff == NULL) {
 		error("No SkillBuffTemplate for: " + String::valueOf(sceneObject->getServerObjectCRC()));
 		return 1;
 	}
@@ -69,7 +72,7 @@ int SkillBuffObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObjec
 	}
 
 	// Submit buff
-	if (buff != nullptr){
+	if (buff != NULL){
 		player->addBuff(buff);
 	}
 

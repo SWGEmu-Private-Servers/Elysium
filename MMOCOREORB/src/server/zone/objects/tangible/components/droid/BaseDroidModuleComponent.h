@@ -6,32 +6,19 @@
 #define BASEDROIDMODULECOMPONENT_H_
 
 #include "engine/engine.h"
-
 #include "server/zone/objects/scene/components/DataObjectComponent.h"
 #include "server/zone/packets/scene/AttributeListMessage.h"
+#include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/objects/creature/ai/DroidObject.h"
+#include "server/zone/objects/intangible/PetControlDevice.h"
 #include "server/zone/objects/manufactureschematic/craftingvalues/CraftingValues.h"
 
 namespace server {
 namespace zone {
 namespace objects {
-	namespace creature {
-		namespace ai {
-			class DroidObject;
-		}
-
-		class CreatureObject;
-	}
-
-	namespace intangible {
-		class PetControlDevice;
-	}
 namespace tangible {
 namespace components {
 namespace droid {
-
-using namespace server::zone::objects::creature;
-using namespace server::zone::objects::intangible;
-using namespace server::zone::objects::creature::ai;
 
 class BaseDroidModuleComponent : public DataObjectComponent, public Logger {
 
@@ -86,7 +73,7 @@ public:
 
 	~BaseDroidModuleComponent();
 
-	virtual String getModuleName() const;
+	virtual String getModuleName();
 
 	void initializeTransientMembers();
 
@@ -124,7 +111,7 @@ public:
 	virtual bool actsAsCraftingStation();
 
 	// string rep of the module
-	virtual String toString() const;
+	virtual String toString();
 
 	virtual void onCall();
 
@@ -140,7 +127,7 @@ public:
 
 	virtual void copy(BaseDroidModuleComponent* other){}
 
-	Reference<server::zone::objects::creature::ai::DroidObject*> getDroidObject();
+	ManagedReference<DroidObject*> getDroidObject();
 
 	virtual void updateCraftingValues(CraftingValues* values, bool firstUpdate);
 
@@ -154,5 +141,4 @@ public:
 } //zone
 } //server
 using namespace server::zone::objects::tangible::components::droid;
-
 #endif /*BASEDROIDMODULECOMPONENT_H_*/

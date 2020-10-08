@@ -15,15 +15,17 @@
 #include "server/zone/managers/group/GroupManager.h"
 #include "server/zone/objects/creature/buffs/SquadLeaderBuff.h"
 #include "server/zone/objects/creature/CreatureObject.h"
+#include "server/zone/ZoneProcessServer.h"
 #include "server/zone/ZoneServer.h"
-#include "server/zone/Zone.h"
+#include "server/zone/managers/objectcontroller/ObjectController.h"
 #include "server/zone/objects/group/RemovePetsFromGroupTask.h"
 #include "server/zone/objects/group/tasks/UpdateNearestMissionForGroupTask.h"
+#include "server/zone/managers/mission/MissionManager.h"
 #include "server/zone/objects/waypoint/WaypointObject.h"
 
 void GroupObjectImplementation::sendBaselinesTo(SceneObject* player) {
-	auto client = player->getClient();
-	if (client == nullptr)
+	ZoneClientSession* client = player->getClient();
+	if (client == NULL)
 		return;
 
 	BaseMessage* grup3 = new GroupObjectMessage3(_this.getReferenceUnsafeStaticCast());
@@ -32,7 +34,7 @@ void GroupObjectImplementation::sendBaselinesTo(SceneObject* player) {
 	BaseMessage* grup6 = new GroupObjectMessage6(_this.getReferenceUnsafeStaticCast());
 	client->sendMessage(grup6);
 
-	if (player->isPlayerCreature() && chatRoom != nullptr)
+	if (player->isPlayerCreature() && chatRoom != NULL)
 		chatRoom->sendTo(cast<CreatureObject*>( player));
 }
 
@@ -43,7 +45,7 @@ void GroupObjectImplementation::startChatRoom(CreatureObject* leader) {
 }
 
 void GroupObjectImplementation::destroyChatRoom() {
-	if (chatRoom == nullptr)
+	if (chatRoom == NULL)
 		return;
 
 	ChatManager* chatManager = server->getZoneServer()->getChatManager();
@@ -51,10 +53,10 @@ void GroupObjectImplementation::destroyChatRoom() {
 
 	chatManager->destroyRoom(chatRoom);
 
-	if (parent != nullptr)
+	if (parent != NULL)
 		chatManager->destroyRoom(parent);
 
-	chatRoom = nullptr;
+	chatRoom = NULL;
 }
 
 void GroupObjectImplementation::broadcastMessage(BaseMessage* msg) {
@@ -86,7 +88,7 @@ void GroupObjectImplementation::updatePvPStatusNearCreature(CreatureObject* crea
 	CloseObjectsVector* creatureCloseObjects = (CloseObjectsVector*) creature->getCloseObjects();
 	SortedVector<QuadTreeEntry*> closeObjectsVector;
 
-	creatureCloseObjects->safeCopyReceiversTo(closeObjectsVector, CloseObjectsVector::CREOTYPE);
+	creatureCloseObjects->safeCopyTo(closeObjectsVector);
 
 	for (int i = 0; i < groupMembers.size(); i++) {
 		CreatureObject* member = groupMembers.get(i).get().get();
@@ -128,15 +130,6 @@ void GroupObjectImplementation::addMember(CreatureObject* newMember) {
 }
 
 void GroupObjectImplementation::removeMember(CreatureObject* member) {
-	bool wasLeader = getLeader() == member;
-
-	if (hasSquadLeader()) {
-		if (wasLeader)
-			removeGroupModifiers();
-		else
-			removeGroupModifiers(member);
-	}
-
 	for (int i = 0; i < groupMembers.size(); i++) {
 		CreatureObject* scno = groupMembers.get(i).get().get();
 
@@ -157,7 +150,7 @@ void GroupObjectImplementation::removeMember(CreatureObject* member) {
 
 		//Close any open Group SUIs.
 		ManagedReference<PlayerObject*> ghost = member->getPlayerObject();
-		if (ghost != nullptr) {
+		if (ghost != NULL) {
 			ghost->closeSuiWindowType(SuiWindowType::GROUP_LOOT_RULE);
 			ghost->closeSuiWindowType(SuiWindowType::GROUP_LOOT_CHANGED);
 			ghost->closeSuiWindowType(SuiWindowType::GROUP_LOOT_PICK_LOOTER);
@@ -171,13 +164,13 @@ void GroupObjectImplementation::removeMember(CreatureObject* member) {
 			GroupManager::instance()->changeMasterLooter(_this.getReferenceUnsafeStaticCast(), groupLeader, false);
 		}
 
-		if (wasLeader && hasSquadLeader()) {
-			addGroupModifiers();
+		if (hasSquadLeader()) {
+			removeGroupModifiers(member);
 		}
 
 		Zone* zone = member->getZone();
 
-		if (zone != nullptr) {
+		if (zone != NULL) {
 			scheduleUpdateNearestMissionForGroup(zone->getPlanetCRC());
 		}
 	}
@@ -242,7 +235,7 @@ void GroupObjectImplementation::disband() {
 	//Group is locked
 
 	for (int i = 0; i < groupMembers.size(); i++) {
-		if (groupMembers.get(i) == nullptr)
+		if (groupMembers.get(i) == NULL)
 			continue;
 
 		Reference<CreatureObject*> groupMember = getGroupMember(i);
@@ -253,12 +246,12 @@ void GroupObjectImplementation::disband() {
 			if (groupMember->isPlayerCreature()) {
 				PlayerObject* ghost = groupMember->getPlayerObject();
 
-				if (ghost != nullptr) {
+				if (ghost != NULL) {
 					ghost->removeWaypointBySpecialType(WaypointObject::SPECIALTYPE_NEARESTMISSIONFORGROUP);
 				}
 			}
 
-			groupMember->updateGroup(nullptr);
+			groupMember->updateGroup(NULL);
 
 		} catch (Exception& e) {
 			System::out << "Exception in GroupObject::disband(Player* player)\n";
@@ -282,10 +275,10 @@ void GroupObjectImplementation::disband() {
 bool GroupObjectImplementation::hasSquadLeader() {
 	Reference<CreatureObject*> leader = getLeader();
 
-	if (leader == nullptr)
+	if (leader == NULL)
 		return false;
 
-	if (leader->isPlayerCreature() && leader->hasSkill("outdoors_squadleader_novice")) {
+	if (leader->isPlayerCreature() && leader->hasSkill("combat_officer_novice")) {
 			return true;
 	}
 
@@ -321,15 +314,18 @@ void GroupObjectImplementation::removeGroupModifiers() {
 }
 
 void GroupObjectImplementation::addGroupModifiers(CreatureObject* player) {
-	if (player == nullptr)
+	if (player == NULL)
 		return;
 
 	Reference<CreatureObject*> leader = getLeader();
 
-	if (leader == nullptr)
+	if (leader == NULL)
 		return;
 
 	if (!leader->isPlayerCreature())
+		return;
+
+	if (leader == player)
 		return;
 
 	int duration = 300;
@@ -348,20 +344,21 @@ void GroupObjectImplementation::addGroupModifiers(CreatureObject* player) {
 	buff->setSkillModifier("private_group_melee_defense", leader->getSkillMod("group_melee_defense"));
 	buff->setSkillModifier("burst_run", leader->getSkillMod("group_burst_run"));
 	player->addBuff(buff);
-
-	buff->addObservers();
 }
 
 void GroupObjectImplementation::removeGroupModifiers(CreatureObject* player) {
-	if (player == nullptr)
+	if (player == NULL)
 		return;
 
 	Reference<CreatureObject*> leader = getLeader();
 
-	if (leader == nullptr)
+	if (leader == NULL)
 		return;
 
 	if (!leader->isPlayerCreature())
+		return;
+
+	if (leader == player)
 		return;
 
 	Locker clocker(player, _this.getReferenceUnsafeStaticCast());
@@ -375,8 +372,8 @@ void GroupObjectImplementation::removeGroupModifiers(CreatureObject* player) {
 
 float GroupObjectImplementation::getGroupHarvestModifier(CreatureObject* player) {
 
-	String skillNovice = "outdoors_ranger_novice";
-	String skillMaster = "outdoors_ranger_master";
+	String skillNovice = "secondary_ranger_novice";
+	String skillMaster = "secondary_ranger_master";
 
 	float modifier = 1.2f;
 
@@ -505,16 +502,16 @@ bool GroupObjectImplementation::isOtherMemberPlayingMusic(CreatureObject* player
 }
 
 void GroupObjectImplementation::scheduleUpdateNearestMissionForGroup(unsigned int planetCRC) {
-	Reference<UpdateNearestMissionForGroupTask*> task = nullptr;
+	Reference<UpdateNearestMissionForGroupTask*> task = NULL;
 
 	if (updateNearestMissionForGroupTasks.contains(planetCRC)) {
 		task = updateNearestMissionForGroupTasks.get(planetCRC);
-		if (task == nullptr) {
+		if (task == NULL) {
 			updateNearestMissionForGroupTasks.drop(planetCRC);
 		}
 	}
 
-	if (task == nullptr) {
+	if (task == NULL) {
 		task = new UpdateNearestMissionForGroupTask(_this.getReferenceUnsafeStaticCast(), planetCRC);
 		updateNearestMissionForGroupTasks.put(planetCRC, task);
 	}

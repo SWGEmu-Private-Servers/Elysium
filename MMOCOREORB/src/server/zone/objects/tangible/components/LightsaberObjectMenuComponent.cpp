@@ -9,7 +9,10 @@
 #include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
 #include "LightsaberObjectMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
+#include "server/zone/managers/objectcontroller/ObjectController.h"
+#include "server/zone/packets/scene/AttributeListMessage.h"
 
 void LightsaberObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject, ObjectMenuResponse* menuResponse, CreatureObject* player) const {
 
@@ -18,7 +21,7 @@ void LightsaberObjectMenuComponent::fillObjectMenuResponse(SceneObject* sceneObj
 
 	ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(sceneObject);
 
-	if(weapon == nullptr)
+	if(weapon == NULL)
 		return;
 
 	TangibleObjectMenuComponent::fillObjectMenuResponse(sceneObject, menuResponse, player);
@@ -41,14 +44,14 @@ int LightsaberObjectMenuComponent::handleObjectMenuSelect(SceneObject* sceneObje
 
 	ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(sceneObject);
 
-	if (weapon == nullptr)
+	if (weapon == NULL)
 		return 1;
 
 	// Handle opening sabers
 	if (selectedID == 89) {
 
 		ManagedReference<SceneObject*> parent = weapon->getParent().get();
-		if (parent != nullptr && parent->isPlayerCreature()){
+		if (parent != NULL && parent->isPlayerCreature()){
 			player->sendSystemMessage("@jedi_spam:saber_not_while_equpped");
 			return 0;
 		}

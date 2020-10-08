@@ -8,6 +8,7 @@
 #ifndef TEMPLATEBASE_H_
 #define TEMPLATEBASE_H_
 
+#include "engine/engine.h"
 #include "templates/params/Param.h"
 
 template <class V> class TemplateBase : public Param {
@@ -80,19 +81,11 @@ public:
 		return value;
 	}
 
-	virtual V getValue() {
+	virtual V getValue() const {
 		return value;
 	}
 
-	virtual const V& getValue() const {
-		return value;
-	}
-
-	virtual V& get() {
-		return value;
-	}
-
-	virtual const V& get() const {
+	virtual V get() const {
 		return value;
 	}
 

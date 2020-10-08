@@ -8,6 +8,7 @@
 #ifndef SKILLDATAFORM_H_
 #define SKILLDATAFORM_H_
 
+#include "engine/engine.h"
 #include "templates/IffTemplate.h"
 
 class SkillDataForm : public IffTemplate {
@@ -53,16 +54,16 @@ public:
 		iffStream->closeForm('PFDT');
 	}
 
-	inline int getTotalPaths() const {
+	inline int getTotalPaths() {
 		return professionInfoPaths.size();
 	}
 
-	inline const String& getPathBySkillName(const String& professionName) const {
+	inline String getPathBySkillName(const String& professionName) {
 		return professionInfoPaths.get(professionName);
 	}
 
-	inline const String& getSkillNameAt(int idx) const {
-		const VectorMapEntry<String, String>* entry = &professionInfoPaths.elementAt(idx);
+	inline String getSkillNameAt(int idx) {
+		VectorMapEntry<String, String>* entry = &professionInfoPaths.elementAt(idx);
 
 		return entry->getKey();
 	}

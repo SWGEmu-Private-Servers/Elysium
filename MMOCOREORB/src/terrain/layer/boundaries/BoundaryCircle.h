@@ -11,18 +11,18 @@
 #include "../ProceduralRule.h"
 #include "Boundary.h"
 
-class BoundaryCircle : public Boundary {
+class BoundaryCircle : public ProceduralRule<'BCIR'>, public Boundary {
 	float centerX;
 	float centerY;
 	float radius;
 	float radiusSquared;
 
 public:
-	BoundaryCircle() : Boundary('BCIR'), centerX(0), centerY(0), radius(0), radiusSquared(0) {
+	BoundaryCircle() : centerX(0), centerY(0), radius(0), radiusSquared(0) {
 		//ruleType = BOUNDARYCIRCLE;
 	}
 
-	void parseFromIffStream(engine::util::IffStream* iffStream) final {
+	void parseFromIffStream(engine::util::IffStream* iffStream) {
 		uint32 version = iffStream->getNextFormType();
 
 		iffStream->openForm(version);
@@ -61,7 +61,7 @@ public:
 		iffStream->closeChunk('DATA');
 	}
 
-	float checkInfluence(float x, float y) const final {
+	float process(float x, float y) {
 		float v3 = centerX - x;
 		float v4 = centerY - y;
 		float result;
@@ -84,32 +84,28 @@ public:
 		return result;
 	}
 
-	bool containsPoint(float x, float y) const final {
-		return checkInfluence(x, y) != 0;
+	bool isEnabled() {
+		return informationHeader.isEnabled();
 	}
 
-	float process(float x, float y) const final {
-		return checkInfluence(x, y);
-	}
-
-	void translateBoundary(float x, float y) final {
+	void translateBoundary(float x, float y) {
 		centerX += x;
 		centerY += y;
 	}
 
-	float getMinX() const final {
+	float getMinX() {
 		return centerX - radius;
 	}
 
-	float getMaxX() const final {
+	float getMaxX() {
 		return centerX + radius;
 	}
 
-	float getMinY() const final {
+	float getMinY() {
 		return centerY - radius;
 	}
 
-	float getMaxY() const final {
+	float getMaxY() {
 		return centerY + radius;
 	}
 };

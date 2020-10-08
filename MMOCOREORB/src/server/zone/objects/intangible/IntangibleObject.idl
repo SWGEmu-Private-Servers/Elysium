@@ -4,11 +4,12 @@
 
 package server.zone.objects.intangible;
 
+import engine.lua.LuaObject;
 import server.zone.objects.scene.SceneObject;
+import server.zone.Zone;
 include templates.SharedObjectTemplate;
 include server.zone.objects.scene.variables.ContainerPermissions;
 
-@json
 class IntangibleObject extends SceneObject {
 	protected unsigned int status;
 

@@ -8,6 +8,8 @@
 #ifndef HAIRSTYLEINFO_H_
 #define HAIRSTYLEINFO_H_
 
+
+#include "engine/engine.h"
 #include "templates/IffTemplate.h"
 
 namespace server {
@@ -71,7 +73,7 @@ public:
 		iffStream->closeForm('PTMP');
 	}
 
-	inline bool hasStyle(const String& style) const {
+	inline bool hasStyle(const String& style) {
 		for (int i = 0; i < styles.size(); ++i) {
 			if (styles.get(i) == style)
 				return true;
@@ -80,11 +82,11 @@ public:
 		return false;
 	}
 
-	inline int getTotalStyles() const {
+	inline int getTotalStyles() {
 		return styles.size();
 	}
 
-	inline const String& getPlayerTemplate() const {
+	inline String& getPlayerTemplate() {
 		return playerTemplate;
 	}
 };

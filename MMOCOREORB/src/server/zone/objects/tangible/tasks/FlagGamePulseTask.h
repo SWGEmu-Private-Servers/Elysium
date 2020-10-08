@@ -2,7 +2,9 @@
 #ifndef FLAGGAMEPULSETASK_H_
 #define FLAGGAMEPULSETASK_H_
 
+#include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/tangible/eventperk/FlagGame.h"
+#include "server/zone/managers/faction/FactionManager.h"
 #include "templates/faction/Factions.h"
 
 namespace server {
@@ -20,7 +22,7 @@ public:
 	}
 
 	void run() {
-		if (game == nullptr || game->isGameEnded())
+		if (game == NULL || game->isGameEnded())
 			return;
 
 		Locker locker(game);

@@ -8,36 +8,30 @@
 #ifndef PORTALLAYOUTMAP_H_
 #define PORTALLAYOUTMAP_H_
 
-#include "templates/appearance/PortalLayout.h"
-#include "templates/appearance/FloorMesh.h"
-#include "templates/appearance/AppearanceTemplate.h"
-#include "templates/building/InteriorLayoutTemplate.h"
+#include "engine/engine.h"
+
+class PortalLayout;
+class FloorMesh;
+class AppearanceTemplate;
 
 class PortalLayoutMap : public HashTable<String, Reference<PortalLayout*> > {
 public:
 	PortalLayoutMap() {
-		setNullValue(nullptr);
+		setNullValue(NULL);
 	}
 };
 
 class FloorMeshMap : public HashTable<String, Reference<FloorMesh*> > {
 public:
 	FloorMeshMap() {
-		setNullValue(nullptr);
+		setNullValue(NULL);
 	}
 };
 
-class AppearanceMap : public HashTable<String, Reference<AppearanceTemplate*> > {
+class AppearanceMap : public HashTable<String, AppearanceTemplate* > {
 public:
 	AppearanceMap() {
-		setNullValue(nullptr);
-	}
-};
-
-class InteriorMap : public HashTable<String, Reference<InteriorLayoutTemplate*> > {
-public:
-	InteriorMap() {
-		setNullValue(nullptr);
+		setNullValue(NULL);
 	}
 };
 

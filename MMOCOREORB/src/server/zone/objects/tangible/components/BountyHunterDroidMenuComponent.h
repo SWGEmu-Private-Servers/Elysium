@@ -10,6 +10,7 @@
 
 #include "TangibleObjectMenuComponent.h"
 #include "server/zone/objects/mission/MissionObject.h"
+#include "server/zone/objects/mission/bountyhunter/BountyHunterDroid.h"
 
 class BountyHunterDroidMenuComponent : public TangibleObjectMenuComponent {
 public:
@@ -95,7 +96,7 @@ private:
 	/**
 	 * Returns a bounty hunter mission object if the player has one.
 	 * @param player the player.
-	 * @return bounty hunter mission object if the player has one otherwise nullptr.
+	 * @return bounty hunter mission object if the player has one otherwise NULL.
 	 */
 	MissionObject* getBountyHunterMission(CreatureObject* player) const;
 };

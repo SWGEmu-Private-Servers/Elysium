@@ -300,7 +300,7 @@
 #include "HarvesterHarvestCommand.h"
 #include "HarvesterMakeCrateCommand.h"
 #include "HarvesterSelectResourceCommand.h"
-#include "HarvesterTakeSurveyCommand.h"
+#include "HarvesterTakeSurvey Command.h"
 #include "HasVeteranRewardCommand.h"
 #include "HaveconsentCommand.h"
 #include "HeadShot1Command.h"
@@ -837,8 +837,11 @@
 #include "InspacereloadCommand.h"
 #include "InspacerrCommand.h"
 #include "RequestSpaceTrainerCommand.h"
-
-
+// DLSWG New commands
+/*#include "VaapaadStrikeCommand.h"
+#include "JungMaStrikeCommand.h"
+#include "ForceRunCommand.h" */
+//#include "PvpCommand.h"
 
 
 #endif /* COMMANDSNEW_H_ */

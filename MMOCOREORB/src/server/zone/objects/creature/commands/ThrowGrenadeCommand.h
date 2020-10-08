@@ -5,6 +5,7 @@
 #ifndef THROWGRENADECOMMAND_H_
 #define THROWGRENADECOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "engine/core/TaskManager.h"
 
 class ThrowGrenadeCommand : public CombatQueueCommand {
@@ -31,7 +32,7 @@ public:
 
 			uint64 weaponID = tokenizer.getLongToken();
 			Reference<WeaponObject*> grenade = server->getZoneServer()->getObject(weaponID).castTo<WeaponObject*>();
-			if (grenade == nullptr)
+			if (grenade == NULL)
 				return INVALIDPARAMETERS;
 
 			if (!grenade->isThrownWeapon())
@@ -41,7 +42,7 @@ public:
 				return GENERALERROR;
 
 			ManagedReference<TangibleObject*> targetObject = server->getZoneServer()->getObject(target).castTo<TangibleObject*>();
-			if (targetObject == nullptr)
+			if (targetObject == NULL)
 				return GENERALERROR;
 
 			if (!(targetObject->isAttackableBy(creature)))
@@ -49,12 +50,12 @@ public:
 
 			SharedObjectTemplate* templateData = TemplateManager::instance()->getTemplate(grenade->getServerObjectCRC());
 
-			if (templateData == nullptr)
+			if (templateData == NULL)
 				return GENERALERROR;
 
 			SharedWeaponObjectTemplate* grenadeData = cast<SharedWeaponObjectTemplate*>(templateData);
 
-			if (grenadeData == nullptr)
+			if (grenadeData == NULL)
 				return GENERALERROR;
 
 			UnicodeString args = "combatSpam=" + grenadeData->getCombatSpam() + ";";
@@ -83,7 +84,7 @@ public:
 	String getAnimation(TangibleObject* attacker, TangibleObject* defender, WeaponObject* weapon, uint8 hitLocation, int damage) const {
 		SharedWeaponObjectTemplate* weaponData = cast<SharedWeaponObjectTemplate*>(weapon->getObjectTemplate());
 
-		if (weaponData == nullptr) {
+		if (weaponData == NULL) {
 			warning("Null weaponData in ThrowGrenadeCommand::getAnimation");
 			return "";
 		}
@@ -112,7 +113,7 @@ public:
 
 		Reference<WeaponObject*> grenade = server->getZoneServer()->getObject(weaponID).castTo<WeaponObject*>();
 
-		if (grenade != nullptr)
+		if (grenade != NULL)
 			return CombatManager::instance()->calculateWeaponAttackSpeed(object, grenade, speedMultiplier);
 		else
 			return defaultTime * speedMultiplier;

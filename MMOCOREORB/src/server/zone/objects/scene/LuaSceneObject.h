@@ -43,7 +43,6 @@ namespace scene {
 		int getParentID(lua_State* L);
 		int isInRange(lua_State* L);
 		int isInRangeWithObject(lua_State* L);
-		int isInRangeWithObject3d(lua_State* L);
 		int wlock(lua_State* L);
 		int unlock(lua_State* L);
 		int getServerObjectCRC(lua_State* L);
@@ -101,8 +100,6 @@ namespace scene {
 		int getChildObject(lua_State* L);
 		int getContainerOwnerID(lua_State* L);
 		int info(lua_State* L);
-		int getPlayersInRange(lua_State* L);
-		int isInNavMesh(lua_State* L);
 
 	protected:
 		SceneObject* _getRealSceneObject() {

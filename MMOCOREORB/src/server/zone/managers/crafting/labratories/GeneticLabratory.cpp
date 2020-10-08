@@ -9,9 +9,6 @@
 #include "server/zone/objects/tangible/component/genetic/GeneticComponent.h"
 #include "server/zone/objects/tangible/component/dna/DnaComponent.h"
 #include "Genetics.h"
-#include "server/zone/objects/draftschematic/DraftSchematic.h"
-#include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
-#include "server/zone/managers/crafting/CraftingManager.h"
 
 GeneticLabratory::GeneticLabratory() {
 }
@@ -91,12 +88,12 @@ void GeneticLabratory::recalculateResist(CraftingValues* craftingValues) {
 
 }
 void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess) {
-	if (manufactureSchematic == nullptr)
+	if (manufactureSchematic == NULL)
 		return;
 
 	ManagedReference<DraftSchematic* > draftSchematic = manufactureSchematic->getDraftSchematic();
 
-	if (draftSchematic == nullptr)
+	if (draftSchematic == NULL)
 		return;
 
 	CraftingValues* craftingValues = manufactureSchematic->getCraftingValues();
@@ -118,7 +115,7 @@ void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, Manuf
 
 	GeneticComponent* genetic = cast<GeneticComponent*>(prototype);
 
-	if (genetic == nullptr)
+	if (genetic == NULL)
 		return;
 
 	HashTable<String, ManagedReference<DnaComponent*> > slots;
@@ -128,17 +125,17 @@ void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, Manuf
 		Reference<IngredientSlot* > iSlot = manufactureSchematic->getSlot(i);
 		ComponentSlot* cSlot = iSlot.castTo<ComponentSlot*>();
 
-		if (cSlot == nullptr)
+		if (cSlot == NULL)
 			continue;
 
 		ManagedReference<TangibleObject*> tano = cSlot->getPrototype();
 
-		if (tano == nullptr)
+		if (tano == NULL)
 			continue;
 
 		ManagedReference<DnaComponent*> component = tano.castTo<DnaComponent*>();
 
-		if (component == nullptr)
+		if (component == NULL)
 			continue;
 
 		slots.put(cSlot->getSlotName(), component);
@@ -151,7 +148,7 @@ void GeneticLabratory::setInitialCraftingValues(TangibleObject* prototype, Manuf
 	DnaComponent* psy = slots.get("psychological_profile").get();
 	DnaComponent* agr = slots.get("aggression_profile").get();
 
-	if (phy == nullptr || pro == nullptr || men == nullptr || psy == nullptr || agr == nullptr)
+	if (phy == NULL || pro == NULL || men == NULL || psy == NULL || agr == NULL)
 		return;
 
 	// REVAMP FROM HERE DOWN.
@@ -337,6 +334,10 @@ int GeneticLabratory::getCreationCount(ManufactureSchematic* manufactureSchemati
 	return 1;
 }
 
+bool GeneticLabratory::allowFactoryRun(ManufactureSchematic* manufactureSchematic) {
+	return false;
+}
+
 void GeneticLabratory::experimentRow(CraftingValues* craftingValues,int rowEffected, int pointsAttempted, float failure, int experimentationResult){
 	// we can 'run super' then reset our resists accordingly as well as armor base.
 	//
@@ -391,21 +392,16 @@ void GeneticLabratory::experimentRow(CraftingValues* craftingValues,int rowEffec
 			craftingValues->setCurrentPercentage(subtitle, newValue);
 		}
 	}
-
 	craftingValues->recalculateValues(false);
 	float currentFort = craftingValues->getCurrentValue("fortitude");
 	int armorValue = currentFort/500;
 	float currentEffective = (int)(((currentFort - (armorValue * 500)) / 50) * 5);
-
+	title = craftingValues->getExperimentalPropertyTitle("resists");
 	for (int i = 0; i < craftingValues->getExperimentalPropertySubtitleSize(); ++i) {
-		subtitlesTitle = craftingValues->getExperimentalPropertySubtitlesTitle(i);
-		subtitle = craftingValues->getExperimentalPropertySubtitle(i);
-		float minValue = craftingValues->getMinValue(subtitle);
-
-		if (subtitlesTitle == "resists" && minValue >= 0) {
-			float maxValue = craftingValues->getMaxValue(subtitle);
-			if (craftingValues->getCurrentValue(i) < maxValue) {
-				craftingValues->setCurrentValue(subtitle, Math::min(currentEffective, maxValue));
+		if (subtitlesTitle == title) {
+			subtitle = craftingValues->getExperimentalPropertySubtitle(i);
+			if (craftingValues->getMaxValue(subtitle) != craftingValues->getCurrentValue(i)) {
+				craftingValues->setCurrentValue(subtitle,currentEffective);
 			}
 		}
 	}

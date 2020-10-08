@@ -9,6 +9,7 @@
 #define PLAYERMONEYREQUEST_H_
 
 #include "server/zone/packets/MessageCallback.h"
+#include "server/zone/packets/player/PlayerObjectDeltaMessage9.h"
 #include "PlayerMoneyResponseMessage.h"
 
 class PlayerMoneyRequestMessageCallback : public MessageCallback {
@@ -24,7 +25,7 @@ public:
 	void run() {
 		ManagedReference<CreatureObject*> player = client->getPlayer();
 
-		if (player == nullptr)
+		if (player == NULL)
 			return;
 
 		PlayerMoneyResponseMessage* reply = new  PlayerMoneyResponseMessage(player);

@@ -8,6 +8,7 @@
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/player/PlayerObject.h"
 #include "LootSchematicMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/objects/draftschematic/DraftSchematic.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 
@@ -25,7 +26,7 @@ void LootSchematicMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject
 
 	LootSchematicTemplate* schematicData = cast<LootSchematicTemplate*>(sceneObject->getObjectTemplate());
 
-	if (schematicData == nullptr) {
+	if (schematicData == NULL) {
 		error("No LootSchematicTemplate for: " + String::valueOf(sceneObject->getServerObjectCRC()));
 		return;
 	}
@@ -57,7 +58,7 @@ int LootSchematicMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 
 		LootSchematicTemplate* schematicData = cast<LootSchematicTemplate*>(sceneObject->getObjectTemplate());
 
-		if (schematicData == nullptr) {
+		if (schematicData == NULL) {
 			error("No LootSchematicTemplate for: " + String::valueOf(sceneObject->getServerObjectCRC()));
 			return 0;
 		}
@@ -73,7 +74,7 @@ int LootSchematicMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 
 		ManagedReference<DraftSchematic* > schematic = SchematicMap::instance()->get(schematicData->getTargetDraftSchematic().hashCode());
 
-		if (schematic == nullptr) {
+		if (schematic == NULL) {
 			player->sendSystemMessage("Error learning schematic, try again later");
 			error("Unable to create schematic: " + schematicData->getTargetDraftSchematic());
 			return 0;
@@ -82,7 +83,7 @@ int LootSchematicMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject,
 		if(ghost->addRewardedSchematic(schematic, SchematicList::LOOT, schematicData->getTargetUseCount(), true)) {
 
 			TangibleObject* tano = cast<TangibleObject*>(sceneObject);
-			if(tano != nullptr)
+			if(tano != NULL)
 				tano->decreaseUseCount();
 			player->sendSystemMessage("@loot_schematic:schematic_learned"); // You acquire a new crafting schematic!
 		}

@@ -29,12 +29,10 @@ class SharedBuildingObjectTemplate : public SharedStructureObjectTemplate {
 
 	int factionBaseType;
 
-	float ejectDistance;
-
 	Vector<SignTemplate> shopSigns;
 
 public:
-	SharedBuildingObjectTemplate() : medicalRating(0), publicStructure(false), alwaysPublic(false), factionBaseType(0), ejectDistance(2.5f) {
+	SharedBuildingObjectTemplate() : medicalRating(0), publicStructure(false), alwaysPublic(false), factionBaseType(0) {
 	}
 
 	~SharedBuildingObjectTemplate() {
@@ -52,18 +50,18 @@ public:
 		return true;
 	}
 
-	inline bool isPublicStructure() const {
+	inline bool isPublicStructure() {
 		if (alwaysPublic)
 			return true;
 
 		return publicStructure;
 	}
 
-	inline bool isAlwaysPublic() const {
+	inline bool isAlwaysPublic() {
 		return alwaysPublic;
 	}
 
-	inline const ChildObject* getSign() const {
+	inline ChildObject* getSign() {
 		return &sign;
 	}
 
@@ -71,7 +69,7 @@ public:
 		return medicalRating;
 	}
 
-	inline int getChildCreatureObjectsSize() const  {
+	inline int getChildCreatureObjectsSize(){
 		return childCreatureObjects.size();
 	}
 
@@ -79,32 +77,24 @@ public:
 		return &childCreatureObjects.get(indx);
 	}
 
-	inline const String& getTerrainModificationFile() const {
+	inline String getTerrainModificationFile() {
 		return terrainModificationFileName.get();
 	}
 
-	inline const String& getInteriorLayoutFileName() const {
-		return interiorLayoutFileName.get();
-	}
-
-	inline const Vector3& getEjectionPoint() const {
+	inline Vector3 getEjectionPoint() {
 		return ejectionPoint;
 	}
 
-	inline int getFactionBaseType() const {
+	inline int getFactionBaseType() {
 		return factionBaseType;
 	}
 
-	inline int getShopSignsSize() const {
+	inline int getShopSignsSize() {
 		return shopSigns.size();
 	}
 
-	inline const SignTemplate* getShopSign(int idx) const {
+	inline SignTemplate* getShopSign(int idx) {
 		return &shopSigns.get(idx);
-	}
-
-	inline float getEjectDistance() const {
-		return ejectDistance;
 	}
 };
 

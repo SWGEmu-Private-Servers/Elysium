@@ -16,8 +16,10 @@
 #include "server/zone/objects/player/sessions/StructureSetAccessFeeSession.h"
 #include "server/zone/objects/building/BuildingObject.h"
 #include "server/chat/StringIdChatParameter.h"
+#include "server/zone/objects/creature/ai/DroidObject.h"
 #include "server/zone/objects/intangible/PetControlDevice.h"
 #include "server/zone/managers/creature/PetManager.h"
+
 
 void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject, ObjectMenuResponse* menuResponse, CreatureObject* creature) const {
 
@@ -28,16 +30,16 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 		return;
 
 	ManagedReference<PlayerObject*> ghost = creature->getPlayerObject();
-	if( ghost == nullptr )
+	if( ghost == NULL )
 		return;
 
 	ManagedReference<Terminal*> terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr)
+	if(terminal == NULL)
 		return;
 
 	ManagedReference<StructureObject*> structureObject = cast<StructureObject*>(terminal->getControlledObject());
 
-	if (structureObject == nullptr)
+	if (structureObject == NULL)
 		return;
 
 	if (structureObject->isCivicStructure()) {
@@ -53,7 +55,7 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 
 				// Not all civic buildings have signs.  Check to see if build already has one before allowing a change
 				BuildingObject* building = cast<BuildingObject*>(structureObject.get());
-				if( building != nullptr && building->getSignObject() != nullptr )
+				if( building != NULL && building->getSignObject() != NULL )
 					menuResponse->addRadialMenuItemToRadialID(118, 69, 3, "@player_structure:management_change_sign"); //Change Sign
 			}
 		}
@@ -74,11 +76,11 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 		menuResponse->addRadialMenuItemToRadialID(118, 50, 3, "@player_structure:management_name_structure"); //Name Structure
 
 		ManagedReference<SceneObject*> datapad = creature->getSlottedObject("datapad");
-		if(datapad != nullptr) {
+		if(datapad != NULL) {
 			for (int i = 0; i < datapad->getContainerObjectsSize(); ++i) {
 				ManagedReference<SceneObject*> object = datapad->getContainerObject(i);
 
-				if (object != nullptr && object->isPetControlDevice()) {
+				if (object != NULL && object->isPetControlDevice()) {
 					PetControlDevice* device = cast<PetControlDevice*>( object.get());
 
 					if (device->getPetType() == PetManager::DROIDPET) {
@@ -93,7 +95,7 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 			menuResponse->addRadialMenuItemToRadialID(118, 127, 3, "@player_structure:management_residence"); //Declare Residence
 			menuResponse->addRadialMenuItemToRadialID(118, 125, 3, "@player_structure:management_privacy"); //Privacy
 
-			if (creature->hasSkill("crafting_artisan_business_01") && structureObject->isOnAdminList(creature)) {
+			if (creature->hasSkill("secondary_merchant_novice") && structureObject->isOnAdminList(creature)) {
 				BuildingObject* building = cast<BuildingObject*>(structureObject.get());
 				if(!building->hasAccessFee())
 					menuResponse->addRadialMenuItemToRadialID(118, 68, 3, "@player_structure:management_add_turnstile"); //Set Access Fee
@@ -102,7 +104,7 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 
 			}
 
-			if (creature->hasSkill("crafting_artisan_business_03"))
+			if (creature->hasSkill("secondary_merchant_novice"))
 				menuResponse->addRadialMenuItemToRadialID(118, 130, 3, "@player_structure:create_vendor"); //Create Vendor
 
 
@@ -120,7 +122,7 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 			menuResponse->addRadialMenuItemToRadialID(117, 122, 3, "@player_structure:permission_vendor"); //Vendor List
 		}
 	} else if(structureObject->isOnPermissionList("VENDOR", creature)) {
-		if (creature->hasSkill("crafting_artisan_business_03")) {
+		if (creature->hasSkill("secondary_merchant_novice")) {
 			menuResponse->addRadialMenuItem(118, 3, "@player_structure:management"); //Structure Management
 			menuResponse->addRadialMenuItemToRadialID(118, 130, 3, "@player_structure:create_vendor"); //Create Vendor
 		}
@@ -129,24 +131,24 @@ void StructureTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneOb
 
 int StructureTerminalMenuComponent::handleObjectMenuSelect(SceneObject* sceneObject, CreatureObject* creature, byte selectedID) const {
 	ManagedReference<Terminal*> terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr)
+	if(terminal == NULL)
 		return 1;
 
 	if(!creature->isPlayerCreature())
 		return 1;
 
 	ManagedReference<PlayerObject*> ghost = creature->getPlayerObject();
-	if( ghost == nullptr )
+	if( ghost == NULL )
 		return 1;
 
 	ManagedReference<StructureObject*> structureObject = cast<StructureObject*>(terminal->getControlledObject());
 
-	if (structureObject == nullptr)
+	if (structureObject == NULL)
 		return 1;
 
 	ManagedReference<Zone*> zone = structureObject->getZone();
 
-	if (zone == nullptr)
+	if (zone == NULL)
 		return 1;
 
 	if (structureObject->isCivicStructure()) {
@@ -166,7 +168,7 @@ int StructureTerminalMenuComponent::handleObjectMenuSelect(SceneObject* sceneObj
 				creature->executeObjectControllerAction(0x18FC1726, structureObject->getObjectID(), ""); //destroyStructure
 				break;
 			case 50:
-				structureManager->promptNameStructure(creature, structureObject, nullptr);
+				structureManager->promptNameStructure(creature, structureObject, NULL);
 				break;
 			case 124:
 				creature->executeObjectControllerAction(0x13F7E585, structureObject->getObjectID(), ""); //structureStatus
@@ -247,7 +249,7 @@ int StructureTerminalMenuComponent::handleObjectMenuSelect(SceneObject* sceneObj
 			}
 			break;
 		case 50:
-			structureManager->promptNameStructure(creature, structureObject, nullptr);
+			structureManager->promptNameStructure(creature, structureObject, NULL);
 			//creature->executeObjectControllerAction(0xC367B461, structureObject->getObjectID(), ""); //nameStructure
 			break;
 		case 69:
@@ -261,7 +263,7 @@ int StructureTerminalMenuComponent::handleObjectMenuSelect(SceneObject* sceneObj
 	}
 
 	if(selectedID == 130 && (structureObject->isOnAdminList(creature) || structureObject->isOnPermissionList("VENDOR", creature))) {
-		if (creature->hasSkill("crafting_artisan_business_03")) {
+		if (creature->hasSkill("secondary_merchant_novice")) {
 			creature->executeObjectControllerAction(STRING_HASHCODE("createvendor")); // Create Vendor
 		}
 	}

@@ -5,7 +5,9 @@
 #ifndef CHATONGETFRIENDSLIST_H_
 #define CHATONGETFRIENDSLIST_H_
 
-#include "engine/service/proto/BaseMessage.h"
+#include "engine/engine.h"
+
+#include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/player/PlayerObject.h"
 
 class ChatOnGetFriendsList : public BaseMessage {
@@ -20,7 +22,7 @@ public:
 
 		String serverName = ghost->getZoneServer()->getGalaxyName();
 
-		const DeltaVector<String>* friendList = ghost->getFriendList();
+		DeltaVector<String>* friendList = ghost->getFriendList();
 		insertInt(friendList->size());
 
 		for (int i = 0; i < friendList->size(); ++i) {

@@ -8,6 +8,7 @@
 #ifndef SLOTDESCRIPTOR_H_
 #define SLOTDESCRIPTOR_H_
 
+#include "engine/engine.h"
 #include "templates/IffTemplate.h"
 
 class SlotDescriptor : public IffTemplate {
@@ -42,11 +43,11 @@ public:
 		iffStream->closeForm('SLTD');
 	}
 
-	void clone(Vector<String>& copyVec) const {
+	void clone(Vector<String>& copyVec) {
 		slots.clone(copyVec);
 	}
 
-	const Vector<String>* getSlots() const {
+	Vector<String>* getSlots() {
 		return &slots;
 	}
 };

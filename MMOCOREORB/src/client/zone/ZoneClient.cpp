@@ -2,9 +2,15 @@
 				Copyright <SWGEmu>
 		See file COPYING for copying conditions.*/
 
+#include "Zone.h"
 #include "ZoneClient.h"
+
 #include "ZonePacketHandler.h"
+
 #include "ZoneMessageProcessorTask.h"
+#include "engine/service/proto/packets/SessionIDRequestMessage.h"
+#include "../../server/zone/packets/zone/ClientIDMessage.h"
+
 
 ZoneClient::ZoneClient(int port) {
 	client = new BaseClient("localhost", port);
@@ -13,25 +19,25 @@ ZoneClient::ZoneClient(int port) {
 	client->setLogging(true);
 	client->setLoggingName("ZoneClient");
 
-	player = nullptr;
+	player = NULL;
 
 	key = 0;
 	accountID = 0;
 
-	zone = nullptr;
+	zone = NULL;
 
 	basePacketHandler = new BasePacketHandler("ZoneClient", this);
-	zonePacketHandler = nullptr;
+	zonePacketHandler = NULL;
 }
 
 ZoneClient::~ZoneClient() {
-	if (player != nullptr)
+	if (player != NULL)
 		delete player;
 
-	player = nullptr;
+	player = NULL;
 
 	delete basePacketHandler,
-	basePacketHandler = nullptr;
+	basePacketHandler = NULL;
 }
 
 void ZoneClient::handleMessage(ServiceClient* client, Packet* message) {

@@ -5,8 +5,7 @@
 #ifndef RESOURCEWEIGHT_H_
 #define RESOURCEWEIGHT_H_
 
-#include "system/lang.h"
-#include "engine/service/proto/BaseMessage.h"
+#include "engine/engine.h"
 
 class ResourceWeight : public Object {
 private:
@@ -66,7 +65,7 @@ public:
 
 		for (int i = 0; i < weights.size(); i++) {
 			float weight = weights.get(i);
-			percentages.add(weight / (denominator ? denominator : 1));
+			percentages.add(weight / denominator);
 		}
 	}
 

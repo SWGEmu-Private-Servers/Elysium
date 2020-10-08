@@ -3,6 +3,8 @@
 		See file COPYING for copying conditions. */
 
 #include "server/zone/managers/crafting/CraftingManager.h"
+#include "server/zone/objects/resource/ResourceContainer.h"
+#include "server/zone/objects/manufactureschematic/ingredientslots/ResourceSlot.h"
 #include "server/zone/managers/crafting/labratories/SharedLabratory.h"
 #include "server/zone/managers/crafting/labratories/ResourceLabratory.h"
 #include "server/zone/managers/crafting/labratories/GeneticLabratory.h"
@@ -11,11 +13,8 @@
 void CraftingManagerImplementation::initialize() {
 	schematicMap = SchematicMap::instance();
 	schematicMap->initialize(zoneServer.get());
+	loadBioSkillMods();
 	configureLabratories();
-}
-
-void CraftingManagerImplementation::stop() {
-	schematicMap = nullptr;
 }
 
 void CraftingManagerImplementation::awardSchematicGroup(PlayerObject* playerObject, Vector<String>& schematicgroups, bool updateClient) {
@@ -55,6 +54,11 @@ int CraftingManagerImplementation::calculateExperimentationFailureRate(CreatureO
 	return failure;
 }
 
+bool CraftingManagerImplementation::allowManufactureSchematic(ManufactureSchematic* manufactureSchematic) {
+	SharedLabratory* lab = labs.get(manufactureSchematic->getLabratory());
+	return lab->allowFactoryRun(manufactureSchematic);
+}
+
 int CraftingManagerImplementation::getCreationCount(ManufactureSchematic* manufactureSchematic) {
 	SharedLabratory* lab = labs.get(manufactureSchematic->getLabratory());
 	return lab->getCreationCount(manufactureSchematic);
@@ -87,7 +91,7 @@ int CraftingManagerImplementation::calculateExperimentationSuccess(CreatureObjec
 	if (player->hasBuff(BuffCRC::FOOD_EXPERIMENT_BONUS)) {
 		Buff* buff = player->getBuff(BuffCRC::FOOD_EXPERIMENT_BONUS);
 
-		if (buff != nullptr) {
+		if (buff != NULL) {
 			expbonus = buff->getSkillModifierValue("experiment_bonus");
 			toolModifier *= 1.0f + (expbonus / 100.0f);
 		}
@@ -164,6 +168,45 @@ void CraftingManagerImplementation::experimentRow(ManufactureSchematic* schemati
 	lab->experimentRow(craftingValues,rowEffected,pointsAttempted,failure,experimentationResult);
 }
 
+bool CraftingManagerImplementation::loadBioSkillMods() {
+	Reference<Lua* > lua = new Lua();
+	lua->init();
+
+	if (!lua->runFile("scripts/managers/crafting/bio_skill_mods.lua")) {
+		return false;
+	}
+
+	LuaObject bioModsTable = lua->getGlobalObject("bioSkillMods");
+
+	if (!bioModsTable.isValidTable())
+		return false;
+
+	for (int i = 1; i <= bioModsTable.getTableSize(); ++i) {
+		String mod = bioModsTable.getStringAt(i);
+		bioMods.put(mod);
+	}
+
+	bioModsTable.pop();
+
+	return true;
+
+}
+
+String CraftingManagerImplementation::checkBioSkillMods(const String& property) {
+
+	for (int l = 0; l < bioMods.size(); ++l) {
+
+		String key = bioMods.elementAt(l);
+		String statname = "cat_skill_mod_bonus.@stat_n:" + key;
+
+		if (property == statname) {
+			return key;
+		}
+	}
+
+	return "";
+}
+
 void CraftingManagerImplementation::configureLabratories() {
 	ResourceLabratory* resLab = new ResourceLabratory();
 	resLab->initialize(zoneServer.get());
@@ -180,7 +223,7 @@ void CraftingManagerImplementation::configureLabratories() {
 
 }
 void CraftingManagerImplementation::setInitialCraftingValues(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic, int assemblySuccess) {
-	if(manufactureSchematic == nullptr || manufactureSchematic->getDraftSchematic() == nullptr)
+	if(manufactureSchematic == NULL || manufactureSchematic->getDraftSchematic() == NULL)
 		return;
 	int labratory = manufactureSchematic->getLabratory();
 	SharedLabratory* lab = labs.get(labratory);

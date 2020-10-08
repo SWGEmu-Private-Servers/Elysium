@@ -3,8 +3,10 @@
 		See file COPYING for copying conditions. */
 
 #include "DroidDetonationModuleDataComponent.h"
+#include "server/zone/ZoneServer.h"
 #include "server/zone/objects/tangible/component/droid/DroidComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
+#include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/objects/creature/events/DroidDetonationTask.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 
@@ -22,7 +24,7 @@ DroidDetonationModuleDataComponent::~DroidDetonationModuleDataComponent() {
 
 }
 
-String DroidDetonationModuleDataComponent::getModuleName() const {
+String DroidDetonationModuleDataComponent::getModuleName() {
 	return String("detonation_module");
 }
 
@@ -38,13 +40,25 @@ void DroidDetonationModuleDataComponent::initialize(DroidObject* droid) {
 	// ensure state on init
 	started = false;
 	initialized = false;
+
+	DroidComponent* droidComponent = cast<DroidComponent*>(getParent());
+	if (droidComponent == NULL) {
+		info("droidComponent was null");
+		return;
+	}
+
+	if (droidComponent->hasKey("module_init")) {
+		droidComponent->changeAttributeValue("module_init", (float)0);
+	} else {
+		droidComponent->addProperty("module_init", 0, 0, "hidden", true);
+	}
 }
 
 void DroidDetonationModuleDataComponent::initializeTransientMembers() {
 
 	// Pull module stat from parent sceno
 	DroidComponent* droidComponent = cast<DroidComponent*>(getParent());
-	if (droidComponent == nullptr) {
+	if (droidComponent == NULL) {
 		info("droidComponent was null");
 		return;
 	}
@@ -59,6 +73,10 @@ void DroidDetonationModuleDataComponent::initializeTransientMembers() {
 
 	if (droidComponent->hasKey("module_count")) {
 		moduleCount = droidComponent->getAttributeValue("module_count");
+	}
+
+	if (droidComponent->hasKey("module_init")) {
+		initialized = droidComponent->getAttributeValue("module_init") == 1;
 	}
 
 	if (droidComponent->hasKey("species")) {
@@ -80,21 +98,11 @@ void DroidDetonationModuleDataComponent::fillAttributeList(AttributeListMessage*
 }
 
 void DroidDetonationModuleDataComponent::fillObjectMenuResponse(SceneObject* droidObject, ObjectMenuResponse* menuResponse, CreatureObject* player) {
-	if (player == nullptr)
+	if (player == NULL)
 		return;
 
-	ManagedReference<DroidObject*> droid = getDroidObject();
-
-	if (droid == nullptr)
-		return;
-
-	ManagedReference<CreatureObject*> owner = droid->getLinkedCreature().get();
-
-	if (owner == nullptr)
-		return;
-
-	// Novice Bounty Hunter or Smuggler required to access radial
-	if (owner == player && (player->hasSkill("combat_bountyhunter_novice") || player->hasSkill("combat_smuggler_novice"))) {
+	// Novie Bounty Hunter or Smuggler required to access radial
+	if (player->hasSkill("secondary_bountyhunter_novice") || player->hasSkill("secondary_scoundrel_novice")) {
 		menuResponse->addRadialMenuItemToRadialID(132, DETONATE_DROID, 3, "@pet/droid_modules:detonate_droid");
 	}
 }
@@ -113,19 +121,45 @@ void DroidDetonationModuleDataComponent::setSpecies(int i) {
 	mseDroid = i == DroidObject::MSE;
 
 	DroidComponent* droidComponent = cast<DroidComponent*>(getParent());
-	if (droidComponent != nullptr) {
+	if (droidComponent != NULL) {
 		droidComponent->addProperty("species", (float)species, 0, "hidden", true);
 	}
 }
 
 int DroidDetonationModuleDataComponent::handleObjectMenuSelect(CreatureObject* player, byte selectedID, PetControlDevice* controller) {
-	ManagedReference<DroidObject*> droid = getDroidObject();
-
-	if (droid == nullptr)
-		return 0;
 
 	if (selectedID == DETONATE_DROID) {
-		player->enqueueCommand(STRING_HASHCODE("detonatedroid"), 0, droid->getObjectID(), "");
+		ManagedReference<DroidObject*> droid = getDroidObject();
+		if (droid == NULL) {
+			info("Droid is null");
+			return 0;
+		}
+
+		Locker dlock(droid, player);
+
+		if (droid->isDead()) {
+			player->sendSystemMessage("@pet/droid_modules:droid_bomb_failed");
+			return 0;
+		}
+
+		// Droid must have power
+		if (!droid->hasPower()) {
+			droid->showFlyText("npc_reaction/flytext","low_power", 204, 0, 0);  // "*Low Power*"
+			return 0;
+		}
+
+		// if the droid is already in detonation countdown we need to ignore this command
+		if (droid->getPendingTask("droid_detonation") != NULL) {
+			if (countdownInProgress())
+				player->sendSystemMessage("@pet/droid_modules:countdown_already_started");
+			else
+				player->sendSystemMessage("@pet/droid_modules:detonation_warmup");
+			return 0;
+		}
+
+		// droid has power and is not dead we can fire off the task
+		Reference<Task*> task = new DroidDetonationTask(this, player);
+		droid->addPendingTask("droid_detonation", task, 0); // queue the task for the droid to occur in 0 MS the task will handle init phase
 	}
 
 	return 0;
@@ -133,8 +167,7 @@ int DroidDetonationModuleDataComponent::handleObjectMenuSelect(CreatureObject* p
 
 void DroidDetonationModuleDataComponent::deactivate() {
 	ManagedReference<DroidObject*> droid = getDroidObject();
-
-	if (droid == nullptr) {
+	if (droid == NULL) {
 		info("Droid is null");
 		return;
 	}
@@ -144,53 +177,28 @@ void DroidDetonationModuleDataComponent::deactivate() {
 	droid->removePendingTask("droid_detonation");
 }
 
-String DroidDetonationModuleDataComponent::toString() const {
+String DroidDetonationModuleDataComponent::toString() {
 	return BaseDroidModuleComponent::toString();
 }
 
 void DroidDetonationModuleDataComponent::onCall() {
-	initialized = false;
 	deactivate();
-
-	ManagedReference<DroidObject*> droid = getDroidObject();
-
-	if (droid == nullptr)
-		return;
-
-	ManagedReference<CreatureObject*> owner = droid->getLinkedCreature().get();
-
-	if (owner == nullptr)
-		return;
-
-	owner->sendSystemMessage("@pet/droid_modules:detonation_warmup");
-
-	Core::getTaskManager()->scheduleTask([droid]{
-		if(droid != nullptr) {
-			Locker locker(droid);
-
-			auto module = droid->getModule("detonation_module").castTo<DroidDetonationModuleDataComponent*>();
-
-			if (module != nullptr)
-				module->setReadyForDetonation();
-		}
-	}, "InitDetModuleTask", 10000);
 }
 
 void DroidDetonationModuleDataComponent::onStore() {
-	initialized = false;
 	deactivate();
 }
 
 void DroidDetonationModuleDataComponent::addToStack(BaseDroidModuleComponent* other) {
 	DroidDetonationModuleDataComponent* otherModule = cast<DroidDetonationModuleDataComponent*>(other);
-	if (otherModule == nullptr)
+	if (otherModule == NULL)
 		return;
 
 	rating = rating + otherModule->rating;
 	moduleCount += 1;
 
 	DroidComponent* droidComponent = cast<DroidComponent*>(getParent());
-	if (droidComponent != nullptr) {
+	if (droidComponent != NULL) {
 		droidComponent->changeAttributeValue("bomb_level", (float)rating);
 		droidComponent->changeAttributeValue("module_count", (float)moduleCount);
 	}
@@ -198,15 +206,16 @@ void DroidDetonationModuleDataComponent::addToStack(BaseDroidModuleComponent* ot
 
 void DroidDetonationModuleDataComponent::copy(BaseDroidModuleComponent* other) {
 	DroidDetonationModuleDataComponent* otherModule = cast<DroidDetonationModuleDataComponent*>(other);
-	if (otherModule == nullptr)
+	if (otherModule == NULL)
 		return;
 
 	rating = otherModule->rating;
 	moduleCount = 1;
 
 	DroidComponent* droidComponent = cast<DroidComponent*>(getParent());
-	if (droidComponent != nullptr) {
+	if (droidComponent != NULL) {
 		droidComponent->addProperty("bomb_level", (float)rating, 0, "exp_effectiveness");
 		droidComponent->addProperty("module_count", (float)moduleCount, 0, "hidden", true);
+		droidComponent->addProperty("module_init", 0, 0, "hidden", true);
 	}
 }

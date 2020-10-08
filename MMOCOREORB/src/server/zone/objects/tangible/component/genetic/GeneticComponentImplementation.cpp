@@ -3,7 +3,10 @@
 		See file COPYING for copying conditions.*/
 
 #include "server/zone/objects/tangible/component/genetic/GeneticComponent.h"
-#include "templates/tangible/SharedWeaponObjectTemplate.h"
+#include "server/zone/objects/manufactureschematic/ManufactureSchematic.h"
+#include "server/zone/objects/tangible/weapon/WeaponObject.h"
+#include "server/zone/objects/creature/ai/CreatureTemplate.h"
+#include "server/zone/managers/crafting/labratories/Genetics.h"
 
 void GeneticComponentImplementation::initializeTransientMembers() {
 	ComponentImplementation::initializeTransientMembers();
@@ -55,6 +58,7 @@ void GeneticComponentImplementation::resetResists(CraftingValues* values) {
 		values->setCurrentValue("dna_comp_armor_energy", 0);
 		values->setCurrentPercentage("dna_comp_armor_energy",0);
 	}
+
 }
 
 void GeneticComponentImplementation::updateCraftingValues(CraftingValues* values, bool firstUpdate) {
@@ -209,7 +213,6 @@ void GeneticComponentImplementation::updateCraftingValues(CraftingValues* values
   	// subtract either 5 or 10 from maxDam to get the minDam
 	minDam = maxDam - ((System::random(1) + 1) * 5);
 }
-
 String GeneticComponentImplementation::convertSpecialAttack(String &attackName) {
 	if (attackName == "defaultattack" || attackName == "")
 		return "@combat_effects:none";
@@ -218,7 +221,6 @@ String GeneticComponentImplementation::convertSpecialAttack(String &attackName) 
 	else
 		return "@combat_effects:" + attackName;
 }
-
 String GeneticComponentImplementation::resistValue(float input){
 	if (input < 0) {
 		return "Vulnerable";
@@ -228,7 +230,6 @@ String GeneticComponentImplementation::resistValue(float input){
 		return displayvalue.toString();
 	}
 }
-
 void GeneticComponentImplementation::fillAttributeList(AttributeListMessage* alm, CreatureObject* object) {
 	TangibleObjectImplementation::fillAttributeList(alm, object);
 	switch (quality){
@@ -257,7 +258,6 @@ void GeneticComponentImplementation::fillAttributeList(AttributeListMessage* alm
 			alm->insertAttribute("dna_comp_quality","Unknown");
 			break;
 	}
-
 	alm->insertAttribute("dna_comp_hardiness",(int)hardiness);
 	alm->insertAttribute("dna_comp_fortitude",(int)fortitude);
 	alm->insertAttribute("dna_comp_endurance",(int)endurance);
@@ -277,7 +277,6 @@ void GeneticComponentImplementation::fillAttributeList(AttributeListMessage* alm
 		alm->insertAttribute("dna_comp_armor_rating","@obj_attr_n:armor_pierce_medium");
 	else if (armorRating == 3)
 		alm->insertAttribute("dna_comp_armor_rating","@obj_attr_n:armor_pierce_heavy");
-
 	// Add resists
 	alm->insertAttribute("dna_comp_armor_kinetic",resistValue(kinResist));
 	alm->insertAttribute("dna_comp_armor_energy",resistValue(energyResist));
@@ -292,15 +291,12 @@ void GeneticComponentImplementation::fillAttributeList(AttributeListMessage* alm
 	alm->insertAttribute("spec_atk_2",convertSpecialAttack(special2));
 	alm->insertAttribute("dna_comp_ranged_attack",ranged ? "Yes" : "No");
 }
-
 bool GeneticComponentImplementation::isSpecialResist(int type) {
 	return specialResists & type;
 }
-
 void GeneticComponentImplementation::setSpecialResist(int type) {
 	specialResists |= type;
 }
-
 int GeneticComponentImplementation::getEffectiveArmor() {
 	if (fortitude < 500)
 		return fortitude/50;

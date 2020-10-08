@@ -5,6 +5,7 @@
 #ifndef FLOURISHCOMMAND_H_
 #define FLOURISHCOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
 #include "server/zone/objects/player/sessions/EntertainingSession.h"
 
 class FlourishCommand: public QueueCommand {
@@ -29,7 +30,7 @@ public:
 		ManagedReference<EntertainingSession*> session =
 				dynamic_cast<EntertainingSession*> (facade.get());
 
-		if (session == nullptr) {
+		if (session == NULL) {
 			creature->sendSystemMessage("@performance:flourish_not_performing");
 			return GENERALERROR;
 		}
@@ -65,7 +66,7 @@ public:
 		ManagedReference<EntertainingSession*> session =
 				dynamic_cast<EntertainingSession*> (facade.get());
 
-		if (session == nullptr)
+		if (session == NULL)
 			return 0.0f;
 
 		int knowledgeSkillMod = 0;
@@ -79,7 +80,7 @@ public:
 
 		//calculating cooldown as defaultTime(5s) - 1s per 30 skill mod val
 		//gives a minimum time of 2s at master
-		float duration = defaultTime - (knowledgeSkillMod / 30.0f);
+		float duration = 1.0;
 		return duration;
 	}
 

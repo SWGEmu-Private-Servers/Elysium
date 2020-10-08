@@ -8,12 +8,13 @@
 #ifndef CUSTOMIZATIONDATAMAP_H_
 #define CUSTOMIZATIONDATAMAP_H_
 
+#include "engine/engine.h"
 #include "templates/customization/CustomizationData.h"
 
-class CustomizationDataMap : public VectorMap<String, Vector<CustomizationData>> {
+class CustomizationDataMap : public VectorMap<String, CustomizationData> {
 public:
 	CustomizationDataMap() {
-		setNoDuplicateInsertPlan();
+		setAllowDuplicateInsertPlan();
 	}
 
 	void parseFromIffStream(IffStream* iffStream) {

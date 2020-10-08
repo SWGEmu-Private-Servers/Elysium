@@ -9,11 +9,13 @@
 #include "server/zone/objects/player/PlayerObject.h"
 #include "server/zone/Zone.h"
 #include "CampTerminalMenuComponent.h"
+#include "server/zone/objects/scene/components/ObjectMenuComponent.h"
 #include "server/zone/packets/object/ObjectMenuResponse.h"
 #include "server/zone/objects/structure/StructureObject.h"
 #include "server/zone/objects/tangible/terminal/Terminal.h"
 #include "server/zone/objects/player/sui/listbox/SuiListBox.h"
 #include "server/zone/managers/structure/StructureManager.h"
+
 
 void CampTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 		ObjectMenuResponse* menuResponse, CreatureObject* player) const {
@@ -22,13 +24,13 @@ void CampTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 		return;
 
 	Terminal* terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr) {
+	if(terminal == NULL) {
 		error("Terminal is null in fillObjectMenuResponse");
 		return;
 	}
 
 	StructureObject* camp = cast<StructureObject*>(terminal->getControlledObject());
-	if(camp == nullptr) {
+	if(camp == NULL) {
 		error("Camp is null in fillObjectMenuResponse");
 		return;
 	}
@@ -38,7 +40,7 @@ void CampTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 
 	/// Get Ghost
 	Reference<PlayerObject*> ghost = player->getSlottedObject("ghost").castTo<PlayerObject*>();
-	if (ghost == nullptr) {
+	if (ghost == NULL) {
 		error("PlayerCreature has no ghost: " + String::valueOf(player->getObjectID()));
 		return;
 	}
@@ -62,16 +64,16 @@ void CampTerminalMenuComponent::fillObjectMenuResponse(SceneObject* sceneObject,
 	}
 
 	SortedVector<ManagedReference<ActiveArea*> >* areas = camp->getActiveAreas();
-	ManagedReference<ActiveArea*> area = nullptr;
+	ManagedReference<ActiveArea*> area = NULL;
 	for (int i = 0; i < areas->size(); ++i) {
 		area = areas->get(i);
 		if (area->isCampArea()) {
 			break;
 		}
-		area == nullptr;
+		area == NULL;
 	}
 
-	if (area != nullptr && area->isCampArea() && (area.castTo<CampSiteActiveArea*>())->isAbandoned()) {
+	if (area != NULL && area->isCampArea() && (area.castTo<CampSiteActiveArea*>())->isAbandoned()) {
 		menuResponse->addRadialMenuItem(183, 3, "@camp:mnu_assume_ownership");
 	}
 }
@@ -107,7 +109,7 @@ void CampTerminalMenuComponent::disbandCamp(SceneObject* sceneObject,
 		CreatureObject* player) const {
 
 	Terminal* terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr) {
+	if(terminal == NULL) {
 		error("Terminal is null in disbandCamp");
 		return;
 	}
@@ -117,17 +119,17 @@ void CampTerminalMenuComponent::disbandCamp(SceneObject* sceneObject,
 	}
 
 	StructureObject* camp = cast<StructureObject*>(terminal->getControlledObject());
-	if(camp == nullptr) {
+	if(camp == NULL) {
 		error("Camp is null in disbandCamp");
 		return;
 	}
 
-	if (camp->getZone() == nullptr)
+	if (camp->getZone() == NULL)
 		return;
 
 	PlayerObject* ghost = player->getPlayerObject();
 
-	if (ghost == nullptr) {
+	if (ghost == NULL) {
 		return;
 	}
 
@@ -141,22 +143,22 @@ void CampTerminalMenuComponent::disbandCamp(SceneObject* sceneObject,
 
 	// Find Camp Area
 	SortedVector<ManagedReference<ActiveArea* > >* areas = camp->getActiveAreas();
-	ManagedReference<ActiveArea*> area = nullptr;
+	ManagedReference<ActiveArea*> area = NULL;
 	for(int i = 0; i < areas->size(); ++i) {
 		area = areas->get(i);
 		if(area->isCampArea()) {
 			break;
 		}
-		area == nullptr;
+		area == NULL;
 	}
 
 	CampSiteActiveArea* campArea = cast<CampSiteActiveArea*>(area.get());
-	if(campArea != nullptr && campArea->despawnCamp())
+	if(campArea != NULL && campArea->despawnCamp())
 		return;
 
 	StructureManager::instance()->destroyStructure(camp);
 
-	if(campArea != nullptr) {
+	if(campArea != NULL) {
 		campArea->destroyObjectFromWorld(true);
 		campArea->destroyObjectFromDatabase(true);
 	}
@@ -166,7 +168,7 @@ void CampTerminalMenuComponent::assumeCampOwnership(SceneObject* sceneObject,
 		CreatureObject* player) const {
 
 	Terminal* terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr) {
+	if(terminal == NULL) {
 		error("Terminal is null in assumeCampOwnership");
 		return;
 	}
@@ -176,14 +178,14 @@ void CampTerminalMenuComponent::assumeCampOwnership(SceneObject* sceneObject,
 	}
 
 	StructureObject* camp = cast<StructureObject*>(terminal->getControlledObject());
-	if(camp == nullptr) {
+	if(camp == NULL) {
 		error("Camp is null in assumeCampOwnership");
 		return;
 	}
 
 	// Find Camp Area
 	SortedVector<ManagedReference<ActiveArea* > >* areas = camp->getActiveAreas();
-	ManagedReference<ActiveArea*> area = nullptr;
+	ManagedReference<ActiveArea*> area = NULL;
 	for(int i = 0; i < areas->size(); ++i) {
 		area = areas->get(i);
 
@@ -191,21 +193,22 @@ void CampTerminalMenuComponent::assumeCampOwnership(SceneObject* sceneObject,
 			break;
 		}
 
-		area = nullptr;
+		area = NULL;
 	}
 
 	ManagedReference<CampSiteActiveArea*> campArea = cast<CampSiteActiveArea*>(area.get());
 
-	if (campArea != nullptr) {
+	if (campArea != NULL) {
 		if(!campArea->isAbandoned())
 			return;
 
 		ManagedReference<CreatureObject*> play = player;
 
-		Core::getTaskManager()->executeTask([=] () {
-			Locker locker(campArea);
-			campArea->assumeOwnership(play);
-		}, "AssumeOwnershipLambda");
+		EXECUTE_TASK_2(campArea, play, {
+				Locker locker(campArea_p);
+				campArea_p->assumeOwnership(play_p);
+		});
+
 	}
 }
 
@@ -213,7 +216,7 @@ void CampTerminalMenuComponent::showCampStatus(SceneObject* sceneObject,
 		CreatureObject* player) const {
 
 	Terminal* terminal = cast<Terminal*>(sceneObject);
-	if(terminal == nullptr) {
+	if(terminal == NULL) {
 		error("Terminal is null in CampTerminalMenuComponent::showCampStatus");
 		return;
 	}
@@ -223,27 +226,27 @@ void CampTerminalMenuComponent::showCampStatus(SceneObject* sceneObject,
 	}
 
 	StructureObject* camp = cast<StructureObject*>(terminal->getControlledObject());
-	if(camp == nullptr) {
+	if(camp == NULL) {
 		error("Camp is null in CampTerminalMenuComponent::showCampStatus");
 		return;
 	}
 
 	// Get Camp Area
 	SortedVector<ManagedReference<ActiveArea* > >* areas = camp->getActiveAreas();
-	ManagedReference<ActiveArea*> area = nullptr;
+	ManagedReference<ActiveArea*> area = NULL;
 	for(int i = 0; i < areas->size(); ++i) {
 		area = areas->get(i);
 		if(area->isCampArea()) {
 			break;
 		}
 
-		area = nullptr;
+		area = NULL;
 	}
 
-	if(area == nullptr) {
+	if(area == NULL) {
 
-		Reference<StructureManager*> structureManager = StructureManager::instance();
-		if (structureManager == nullptr) {
+		ManagedReference<StructureManager*> structureManager = StructureManager::instance();
+		if (structureManager == NULL) {
 			error("Unable to get StructureManager in CampTerminalMenuComponent::showCampStatus");
 			return;
 		}
@@ -255,13 +258,13 @@ void CampTerminalMenuComponent::showCampStatus(SceneObject* sceneObject,
 	}
 
 	CampSiteActiveArea* campArea = cast<CampSiteActiveArea*>(area.get());
-	if(campArea == nullptr) {
+	if(campArea == NULL) {
 		error("How the fuck did this happen");
 		return;
 	}
 	/// Get Ghost
 	Reference<PlayerObject*> ghost = player->getSlottedObject("ghost").castTo<PlayerObject*>();
-	if (ghost == nullptr) {
+	if (ghost == NULL) {
 		error("PlayerCreature has no ghost in CampTerminalMenuComponent::showCampStatus: " + String::valueOf(player->getObjectID()));
 		return;
 	}

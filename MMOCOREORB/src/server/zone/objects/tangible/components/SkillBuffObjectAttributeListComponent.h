@@ -1,5 +1,5 @@
 /*
- * SkillBuffObjectAttributeListComponent.h
+ * SkillBuffTemplate.h
  *
  *  Created on: 9/21/2013
  *      Author: Klivian
@@ -10,6 +10,7 @@
 
 #include "templates/tangible/SkillBuffTemplate.h"
 #include "server/zone/objects/scene/components/AttributeListComponent.h"
+#include "server/zone/objects/tangible/TangibleObject.h"
 
 class SkillBuffObjectAttributeListComponent: public AttributeListComponent {
 public:
@@ -22,8 +23,8 @@ public:
 	 */
 	void fillAttributeList(AttributeListMessage* alm, CreatureObject* creature, SceneObject* object) const {
 
-		Reference<SkillBuffTemplate*> skillBuff = cast<SkillBuffTemplate*>(object->getObjectTemplate());
-		if (skillBuff == nullptr) {
+		ManagedReference<SkillBuffTemplate*> skillBuff = cast<SkillBuffTemplate*>(object->getObjectTemplate());
+		if (skillBuff == NULL) {
 			error("No SkillBuffTemplate for: " + String::valueOf(object->getServerObjectCRC()));
 			return;
 		}

@@ -8,6 +8,11 @@
 #ifndef PALETTECOLORCUSTOMIZATIONVARIABLE_H_
 #define PALETTECOLORCUSTOMIZATIONVARIABLE_H_
 
+#include "engine/engine.h"
+
+#include "templates/params/Param.h"
+#include "templates/params/primitives/StringParam.h"
+#include "templates/params/primitives/IntegerParam.h"
 #include "templates/params/RangedIntCustomizationVariable.h"
 
 class PaletteColorCustomizationVariable : public RangedIntCustomizationVariable {
@@ -46,7 +51,7 @@ public:
 		return *this;
 	}
 
-	String toString() const {
+	String toString() {
 		StringBuffer stream;
 		/*stream << "variableName" << " = " << variableName.toString() << "\n";
 		stream << "palettePathName" << " = " << palettePathName.toString() << "\n";
@@ -70,7 +75,7 @@ public:
 
 		Chunk* chunk = iffStream->openChunk('PCNT');
 
-		if (chunk == nullptr) {
+		if (chunk == NULL) {
 			//std::cout << "could not open pcnt\n";
 			return false;
 		}
@@ -102,7 +107,7 @@ public:
 	}
 
 
-	inline const String& getPaletteFileName() const {
+	inline String getPaletteFileName() {
 		return palettePathName.get();
 	}
 
@@ -110,10 +115,11 @@ public:
 		return address->parseFromString(value, version);
 	}*/
 
-	const String& getVariableName() const {
+	String getVariableName() {
 		return variableName.get();
 	}
 
 };
+
 
 #endif /* PALETTECOLORCUSTOMIZATIONVARIABLE_H_ */

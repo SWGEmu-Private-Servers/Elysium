@@ -6,7 +6,9 @@
  */
 
 #include "SharedTangibleObjectTemplate.h"
+
 #include "templates/manager/TemplateManager.h"
+#include "templates/footprint/StructureFootprint.h"
 #include "templates/params/PaletteColorCustomizationVariables.h"
 #include "templates/params/RangedIntCustomizationVariables.h"
 
@@ -35,17 +37,18 @@ SharedTangibleObjectTemplate::SharedTangibleObjectTemplate() {
 
 	useCount = 0;
 
+	factoryCrateSize = 0;
+
 	sliceable = false;
 
 	faction = 0;
-
-	junkDealerNeeded = 0;
-	junkValue = 0;
 
 	resourceWeights = new Vector<Reference<ResourceWeight* > >();
 
 	skillMods.setNoDuplicateInsertPlan();
 	skillMods.setNullValue(0);
+
+	factoryCrateSize = 100;
 }
 
 SharedTangibleObjectTemplate::~SharedTangibleObjectTemplate() {
@@ -72,7 +75,7 @@ void SharedTangibleObjectTemplate::parseFileData(IffStream* iffStream) {
 	for (int i = 0; i < variableCount; ++i) {
 		Chunk* chunk = iffStream->openChunk();
 
-		if (chunk == nullptr)
+		if (chunk == NULL)
 			continue;
 
 		if (chunk->getChunkID() == 'XXXX') {
@@ -108,6 +111,8 @@ void SharedTangibleObjectTemplate::parseVariableData(const String& varName, LuaO
 		playerUseMask = Lua::getShortParameter(state);
 	} else if (varName == "useCount") {
 		useCount = Lua::getIntParameter(state);
+	} else if (varName == "factoryCrateSize") {
+		factoryCrateSize = Lua::getIntParameter(state);
 	} else if (varName == "maxCondition") {
 		maxCondition = Lua::getIntParameter(state);
 	} else if (varName == "level") {
@@ -121,10 +126,6 @@ void SharedTangibleObjectTemplate::parseVariableData(const String& varName, LuaO
 	} else if (varName == "faction") {
 		String factionString = Lua::getStringParameter(state);
 		faction = factionString.toLowerCase().hashCode();
-	} else if (varName == "junkDealerNeeded") {
-		junkDealerNeeded = Lua::getIntParameter(state);
-	} else if (varName == "junkValue") {
-		junkValue = Lua::getIntParameter(state);
 	} else if (varName == "invisible") {
 		invisible = (bool) Lua::getByteParameter(state);
 	} else if (varName == "playerRaces") {
@@ -261,7 +262,7 @@ void SharedTangibleObjectTemplate::parseVariableData(const String& varName, Chun
 		}*/
 	} else if (varName == "socketDestinations") {
 //		socketDestinations.parse(data);
-	} else if (varName == "structureFootprintFileName") {
+	} else if (varName == "structureFootprintFileName") {		
 		StringParam structureFootprintFileName;
 
 		if (structureFootprintFileName.parse(data))
@@ -330,16 +331,18 @@ void SharedTangibleObjectTemplate::readObject(IffStream* iffStream) {
 void SharedTangibleObjectTemplate::readObject(LuaObject* templateData) {
 	SharedObjectTemplate::readObject(templateData);
 
+	TemplateManager* templateManager = TemplateManager::instance();
+
 	lua_State* L = templateData->getLuaState();
 
 	if (!templateData->isValidTable())
 		return;
 
 	int i = 0;
-
-	lua_pushnil(L);
+	
+	lua_pushnil(L);  
 	while (lua_next(L, -2) != 0) {
-		// 'key' is at index -2 and 'value' at index -1
+		// 'key' is at index -2 and 'value' at index -1 
 		//printf("%s - %s\n",
 		//		lua_tostring(L, -2), lua_typename(L, lua_type(L, -1)));
 
@@ -352,7 +355,7 @@ void SharedTangibleObjectTemplate::readObject(LuaObject* templateData) {
 			parseVariableData(varName, templateData);
 		} else
 			lua_pop(L, 1);
-
+		
 
 		++i;
 	}

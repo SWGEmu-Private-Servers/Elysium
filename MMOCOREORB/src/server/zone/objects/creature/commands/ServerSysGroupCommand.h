@@ -5,6 +5,8 @@
 #ifndef SERVERSYSGROUPCOMMAND_H_
 #define SERVERSYSGROUPCOMMAND_H_
 
+#include "server/zone/objects/scene/SceneObject.h"
+
 class ServerSysGroupCommand : public QueueCommand {
 public:
 
@@ -25,7 +27,7 @@ public:
 			ManagedReference<CreatureObject*> player = creature;
 			ManagedReference<GroupObject*> group = player->getGroup();
 
-			if (group == nullptr) {
+			if (group == NULL) {
 				player->sendSystemMessage("@error_message:not_grouped");
 				return GENERALERROR;
 			}

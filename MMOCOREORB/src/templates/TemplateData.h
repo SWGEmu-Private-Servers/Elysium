@@ -8,12 +8,10 @@
 #ifndef TEMPLATEDATA_H_
 #define TEMPLATEDATA_H_
 
-#include "system/lang/Object.h"
+#include "engine/engine.h"
 
 class TemplateData : public virtual Object {
 public:
-	constexpr const static bool is_virtual_object = true;
-
 	virtual ~TemplateData() {
 
 	}

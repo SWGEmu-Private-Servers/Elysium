@@ -6,7 +6,7 @@
 #include "server/zone/objects/manufactureschematic/ManufactureSchematic.h"
 
 CraftingValues::CraftingValues() {
-	experimentalValuesMap.setNullValue(nullptr);
+	experimentalValuesMap.setNullValue(NULL);
 	doHide = true;
 	setLoggingName("CraftingValues");
 	setLogging(false);
@@ -34,7 +34,7 @@ CraftingValues::CraftingValues(const CraftingValues& values) : Object(), Seriali
 }
 
 CraftingValues::CraftingValues(const ValuesMap& values) : Object(), Serializable(), Logger() {
-	experimentalValuesMap.setNullValue(nullptr);
+	experimentalValuesMap.setNullValue(NULL);
 	doHide = true;
 
 	for (int i = 0; i < values.size(); ++i) {
@@ -52,9 +52,8 @@ CraftingValues::CraftingValues(const ValuesMap& values) : Object(), Serializable
 }
 
 CraftingValues::~CraftingValues() {
-	experimentalValuesMap.removeAll();
-	schematic = nullptr;
-	player = nullptr;
+	//valuesToSend.removeAll();
+	//info("Deleting CraftingValues");
 }
 
 void CraftingValues::setManufactureSchematic(ManufactureSchematic* manu) {
@@ -62,7 +61,7 @@ void CraftingValues::setManufactureSchematic(ManufactureSchematic* manu) {
 }
 
 ManufactureSchematic* CraftingValues::getManufactureSchematic() {
-	return schematic.get();
+	return schematic;
 }
 
 void CraftingValues::setPlayer(CreatureObject* play) {
@@ -70,7 +69,7 @@ void CraftingValues::setPlayer(CreatureObject* play) {
 }
 
 CreatureObject* CraftingValues::getPlayer() {
-	return player.get();
+	return player;
 }
 
 void CraftingValues::recalculateValues(bool initial) {
@@ -79,7 +78,9 @@ void CraftingValues::recalculateValues(bool initial) {
 	bool hidden = false;
 
 	for (int i = 0; i < getSubtitleCount(); ++i) {
+
 		attributeName = getExperimentalPropertySubtitle(i);
+
 		experimentalPropTitle = getExperimentalPropertyTitle(attributeName);
 
 		min = getMinValue(attributeName);
@@ -87,7 +88,7 @@ void CraftingValues::recalculateValues(bool initial) {
 
 		hidden = isHidden(attributeName);
 
-		percentage = getCurrentPercentage(attributeName);
+		percentage = getCurrentPercentage(attributeName);//experimentalPropTitle);
 
 		oldValue = getCurrentValue(attributeName);
 
@@ -107,22 +108,25 @@ void CraftingValues::recalculateValues(bool initial) {
 
 		if (initial || (newValue != oldValue && !initial && !hidden)) {
 			setCurrentValue(attributeName, newValue);
+
 			valuesToSend.add(attributeName);
 		}
 	}
+
+	//toString();
 }
 
 void CraftingValues::clearAll() {
 	doHide = true;
 	experimentalValuesMap.removeAll();
 	valuesToSend.removeAll();
-	schematic = nullptr;
-	player = nullptr;
+	schematic = NULL;
+	player = NULL;
 	clearSlots();
 }
 
-String CraftingValues::toString() const {
-	const Subclasses* tempSubclasses;
+String CraftingValues::toString() {
+	Subclasses* tempSubclasses;
 
 	StringBuffer str;
 

@@ -35,12 +35,12 @@ public:
 
 		ManagedReference<SceneObject* > object = server->getZoneServer()->getObject(target);
 		ManagedReference<CreatureObject*> player = cast<CreatureObject*>(creature);
-		if (player && !player->hasSkill("outdoors_bio_engineer_novice")) {
+		if (player && !player->hasSkill("secondary_beastmaster_novice")) {
 			player->sendSystemMessage("@bio_engineer:harvest_dna_skill_too_low"); // You are not sufficiently skilled to take DNA samples.
 			return GENERALERROR;
 		}
 
-		if (object == nullptr) {
+		if (object == NULL) {
 			player->sendSystemMessage("@bio_engineer:harvest_dna_need_target"); // You need to target the creature you wish to take a DNA sample from.
 			return INVALIDTARGET;
 		}
@@ -59,7 +59,7 @@ public:
 			return GENERALERROR;
 		}
 
-		if (cr == nullptr || !cr->isAttackableBy(player)){
+		if (cr == NULL || !cr->isAttackableBy(player)){
 			player->sendSystemMessage("@bio_engineer:harvest_dna_invalid_target"); // You cannot sample DNA from that target.
 			return INVALIDTARGET;
 		}
@@ -95,7 +95,7 @@ public:
 
 		if (cr->canCollectDna(player)) {
 
-			if (cr->getZone() == nullptr){
+			if (cr->getZone() == NULL){
 				return GENERALERROR;
 			}
 

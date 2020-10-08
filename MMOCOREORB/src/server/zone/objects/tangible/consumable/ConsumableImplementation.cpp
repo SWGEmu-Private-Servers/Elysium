@@ -8,20 +8,23 @@
 #include "server/zone/objects/tangible/consumable/Consumable.h"
 #include "server/zone/objects/creature/CreatureObject.h"
 #include "server/zone/objects/player/PlayerObject.h"
+#include "server/zone/objects/player/Races.h"
 #include "server/zone/objects/creature/buffs/DurationBuff.h"
 #include "server/zone/objects/creature/buffs/SpiceBuff.h"
 #include "server/zone/objects/creature/buffs/DelayedBuff.h"
 #include "templates/params/creature/CreatureAttribute.h"
 #include "server/zone/packets/scene/AttributeListMessage.h"
 #include "templates/tangible/ConsumableTemplate.h"
+#include "server/zone/objects/tangible/consumable/DelayedBuffObserver.h"
 #include "server/zone/managers/player/PlayerManager.h"
+
 
 void ConsumableImplementation::loadTemplateData(SharedObjectTemplate* templateData) {
 	TangibleObjectImplementation::loadTemplateData(templateData);
 
 	ConsumableTemplate* consumable = dynamic_cast<ConsumableTemplate*>(templateData);
 
-	if (consumable == nullptr)
+	if (consumable == NULL)
 		return;
 
 	duration = consumable->getDuration();
@@ -144,7 +147,7 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 
 	int availfill = 0;
 
-	if (ghost == nullptr)
+	if (ghost == NULL)
 		return 1;
 
 	if (isFood())
@@ -164,7 +167,7 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 	}
 
 
-	ManagedReference<Buff*> buff = nullptr;
+	ManagedReference<Buff*> buff = NULL;
 
 	switch (effectType) {
 	case EFFECT_ATTRIBUTE: {
@@ -182,16 +185,6 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 		Locker locker(buff);
 
 		setModifiers(buff, true);
-
-		// Set the sysmsg(s) for the skillmod.
-		StringIdChatParameter params("@combat_effects:skill_mod_buffed"); // Your skill in %TO has improved.
-
-		// Send a message for every modifier in this case.
-		for (int i = 0; i < modifiers.size(); ++i) {
-			params.setTO("@stat_n:" + modifiers.elementAt(i).getKey());
-			player->sendSystemMessage(params); // According to evidence, this should send before the consumed message, so we don't want to set the buff spam start.
-		}
-
 		break;
 	}
 
@@ -209,52 +202,17 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 	}
 
 	case EFFECT_HEALING: {
-		int healthHealed = 0, actionHealed = 0, mindHealed = 0;
+		int dmghealed = player->healDamage(player, 6, nutrition);
 
-		for (int i = 0; i < modifiers.size(); ++i) {
-			String key = modifiers.elementAt(i).getKey();
-
-			if (key == "health")
-				healthHealed = player->healDamage(player, 0, nutrition);
-			else if (key == "action")
-				actionHealed = player->healDamage(player, 3, nutrition);
-			else if (key == "mind")
-				mindHealed = player->healDamage(player, 6, nutrition);
-		}
-
-		if ((healthHealed + actionHealed + mindHealed) <= 0) {
-			player->sendSystemMessage("@healing:no_damage_to_heal_self"); // You have no damage to heal.
+		if (dmghealed <= 0) {
+			player->sendSystemMessage("@healing:no_mind_to_heal_self"); //You have no mind to heal.
 			return 0;
 		}
 
-		StringBuffer sysMsg;
+		StringIdChatParameter stringId("combat_effects", "food_mind_heal");
+		stringId.setDI(dmghealed);
 
-		sysMsg << "You heal yourself for ";
-
-		if (healthHealed > 0) {
-			sysMsg << healthHealed << " health";
-
-			if (actionHealed > 0 && mindHealed > 0) {
-				sysMsg << ", ";
-			} else if (actionHealed > 0 || mindHealed > 0){
-				sysMsg << " and ";
-			}
-		}
-
-		if (actionHealed > 0) {
-			sysMsg << actionHealed << " action";
-
-			if (mindHealed > 0)
-				sysMsg << " and ";
-		}
-
-		if (mindHealed > 0) {
-			sysMsg << mindHealed << " mind";
-		}
-
-		sysMsg << ".";
-
-		player->sendSystemMessage(sysMsg.toString());
+		player->sendSystemMessage(stringId);
 
 		break;
 	}
@@ -297,13 +255,7 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 
 			if (!playerManager->doBurstRun(player, hamModifier, cooldownModifier))
 				return 0;
-		} else if (effect == "wookiee_roar") {
-			uint64 target = player->getTargetID();
-			player->enqueueCommand(STRING_HASHCODE("wookieeroar"), 0, target, "", 1);
-		} else if (effect == "enhanced_regen") {
-			uint64 target = player->getObjectID();
-			player->addSkillMod(SkillModManager::TEMPORARYMOD,"enhanced_regen",nutrition,true);
-			player->enqueueCommand(STRING_HASHCODE("regeneration"), 0, target, "", 1);
+
 		} else if (effect == "food_reduce") {
 			//Tilla till reduces food stomach filling by a percentage
 			int currentfilling = ghost->getFoodFilling();
@@ -320,9 +272,9 @@ int ConsumableImplementation::handleObjectMenuSelect(CreatureObject* player, byt
 
 	default:
 		break;
-	}
+        }
 
-	if (buff != nullptr) {
+	if (buff != NULL) {
 		Locker locker(buff);
 
 		player->addBuff(buff);
@@ -427,13 +379,9 @@ void ConsumableImplementation::fillAttributeList(AttributeListMessage* alm, Crea
 				alm->insertAttribute("stomach_drink", filling);
 		}
 
-		if (modifiers.size() == 1 && modifiers.elementAt(0).getKey() == "mind") {
-			alm->insertAttribute("mind_heal", nutrition);
-		} else {
-			for (int i = 0; i < modifiers.size(); ++i) {
-				VectorMapEntry<String, float>* entry = &modifiers.elementAt(i);
-				alm->insertAttribute("examine_heal_damage_" + entry->getKey(), nutrition);
-			}
+		for (int i = 0; i < modifiers.size(); ++i) {
+			VectorMapEntry<String, float>* entry = &modifiers.elementAt(i);
+			alm->insertAttribute(entry->getKey() + "_heal", nutrition);
 		}
 
 		break;

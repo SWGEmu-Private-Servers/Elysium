@@ -13,13 +13,9 @@
 
 class CloningBuildingObjectTemplate : public SharedBuildingObjectTemplate {
 	Vector<CloneSpawnPoint> spawningPoints;
-	int facilityType;
 
 public:
-	enum { STANDARD = 0, PLAYER_CITY, JEDI_ONLY, LIGHT_JEDI_ONLY, DARK_JEDI_ONLY, FACTION_REBEL, FACTION_IMPERIAL };
-
 	CloningBuildingObjectTemplate() {
-		facilityType = 0;
 	}
 
 	~CloningBuildingObjectTemplate() {
@@ -51,27 +47,17 @@ public:
 		}
 
 		luaItemList.pop();
-
-		facilityType = templateData->getIntField("facilityType");
 	}
 
 	CloneSpawnPoint* getRandomSpawnPoint() {
 		if (spawningPoints.size() == 0)
-			return nullptr;
+			return NULL;
 
 		return &spawningPoints.get(System::random(spawningPoints.size() - 1));
 	}
 
 	bool isCloningBuildingObjectTemplate() {
 		return true;
-	}
-
-	int getFacilityType() {
-		return facilityType;
-	}
-
-	bool isJediCloner() {
-		return facilityType == JEDI_ONLY || facilityType == LIGHT_JEDI_ONLY || facilityType == DARK_JEDI_ONLY;
 	}
 
 	inline Vector<CloneSpawnPoint>* getCloneSpawnPoints() {
